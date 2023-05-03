@@ -29,27 +29,7 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                   <ul class="navbar-nav ml-auto mt-2 mb-2 ">
 
-                    <!-- <button class='btn btn-light mr-1' id = "view0_button" {{view0_button}}><i class="fas fa-th-large"></i></button >
-                    <button class='btn btn-light' id = "view1_button" {{view1_button}}><i class="fas fa-list"></i></button>
-                 -->
-
-                      {% if favList %}
-
-                      <form id = "uploadForm" class="md-form" action = "/upload/{{currentDir}}" method = "POST"  enctype = "multipart/form-data" style="display:none;">
-
-                        <input style="color:white;" class ="btn btn-sm "  type="file" name = "files[]" multiple="true" >
-                        <input class="btn btn-sm mr-4" type = "submit" value="Upload"/>
-                    
-                      </form>
-
-                      <button id = "uploadButton" class="btn btn-sm mr-4 ml-4" style="margin-bottom:6px;margin-top:3px;">Upload</button>
-                
-                      {% endif %}
-                      <button class='btn btn-light mr-1' id = "view0_button" {{view0_button}}><i class="fas fa-th-large"></i></button >
-                        <button class='btn btn-light mr-3' id = "view1_button" {{view1_button}}><i class="fas fa-list"></i></button>
-                    
-
-                               
+                             
                     {% for f in favList %}
 
                     {% set list1 = f.split('/') %}
@@ -64,21 +44,10 @@
 
 
                     {% if favList %}
-                    <li class="nav-item mr-4">
-                    <a data-toggle="tooltip" data-placement="right" title="Support Me" class = "ml-3" href="https://www.buymeacoffee.com/rehanahmed" target ="_blank" ><img
-                      alt = "Buy Me a Coffee" src="/static/coffee.png" style="margin-top:7px;width:25px; height:25px;"></a>
-                    </li>
-
-                    <!-- <li class="nav-item mr-4">
-                      <a data-toggle="tooltip" data-placement="right" title="Download Folder" class="nav-link active hvr-shadow" href="/downloadFolder/{{currentDir}}"> <span class="fa fa-download"></span><span class="sr-only">(current)</span></a>
-                  </li> -->
                   
                     <li class="nav-item">
-                      <!-- <p style="color:black;" data-toggle="tooltip" data-placement="right" title="Logout" > -->
+                     
                         <a data-toggle="tooltip" data-placement="right" title="Logout" class="nav-link active hvr-shadow" href="/logout/"> <span class="fa fa-sign-out-alt"></span> <span class="sr-only">(current)</span></a>
-                      <!-- </p> -->
-                      <!-- <a class="nav-link active hvr-shadow" href="/logout/"> <span class="fa fa-sign-out-alt"></span> <span class="sr-only">(current)</span></a> -->
-                 
                     </li>
 
                  
@@ -99,7 +68,6 @@
             {{currentDir_path}}
             
             {% endautoescape %}
-            <!-- <a href = "/files/Users">Users</a><a href = "/files/Users/rehanahmed">rehanahmed</a><a href = "/files/Users/rehanahmed/Documents">Documents</a> -->
             <hr>
           </div>
         </div>
@@ -155,18 +123,6 @@ $(function () {
             const url='/changeView?view=0';
             Http.open("GET", url);
             Http.send();
-
-  //           $.ajax({url: "/calc", success: function(result){
-  // }});
-
-        // $.ajax({
-				// 	url: 'localhost:5000/api/changeView?view=0',
-
-				// 	success: function (data) {
-        //     $('#view1_container').css('display', 'none');
-				//     $('#view0_container').css('display', 'block');
-				// 	},
-				// });
         
 			});
       $('#view1_button').click(function () {
@@ -180,15 +136,6 @@ $(function () {
         const url='/changeView?view=1';
         Http.open("GET", url);
         Http.send();
-        // $.ajax({
-				// 	url: '/api/changeView?view=1',
-
-				// 	success: function (data) {
-        //     $('#view1_container').css('display', 'none');
-				//     $('#view0_container').css('display', 'block');
-				// 	},
-
-				// });
 			});
 });
 

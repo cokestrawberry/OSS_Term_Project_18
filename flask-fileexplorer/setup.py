@@ -13,6 +13,12 @@ import json
 import zipfile
 import filetype
 
+# ====================================
+# OSS Code
+import git
+repo_str = ""
+# ====================================
+
 from urllib.parse import unquote
 import socket
 hostname = socket.gethostname()
@@ -222,7 +228,18 @@ def getDirList():
                 tp = get_file_extension(i)
                 for file_type in tp_dict.values():
                     if tp in file_type[0]:
-                        image = "files_icon/"+file_type[1]
+                        # ====================================
+                        # origin
+                        ## image = "files_icon/"+file_type[1]
+                        # OSS Code
+                        if isGitRepo():
+                            if getFileStatus(i)!="committed":
+                                image = "files_icon/" + file_type[1][:-4] + "-" + getFileStatus(i) + ".png"
+                            else:
+                                image = "files_icon/" + file_type[1]
+                        else:
+                            image = "files_icon/"+file_type[1]                        
+                        # ====================================
                         break
                 tp = "" if not tp else tp
             except:
@@ -250,6 +267,13 @@ def getDirList():
                 file_list_dict[i]['dtc'] = "---"
                 file_list_dict[i]['dtm'] = "---"
                 file_list_dict[i]['size'] = "---"
+            # ====================================
+            # OSS Code
+            if isGitRepo():
+                file_list_dict[i]['state'] = getFileStatus(i)
+            else:
+                file_list_dict[i]['state'] = None
+            # ====================================
     return dir_list_dict, file_list_dict
 
 
@@ -267,6 +291,13 @@ def getFileList():
 @app.route('/files/<path:var>', methods=['GET'])
 def filePage(var=""):
     global default_view
+    # ====================================
+    # OSS Code
+    global repo_str
+    repo_str = var
+    
+    isgit = False
+    # ====================================
     if('login' not in session):
         return redirect('/login/files/'+var)
     # print(var)
@@ -298,8 +329,20 @@ def filePage(var=""):
         for c in range(0, len(cList)):
             var_path += ' / <a style = "color:black;"href = "/files/' + \
                 '/'.join(cList[0:c+1])+'">'+unquote(cList[c])+'</a>'
-    return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict)
+            
+    # ====================================
+    # origin
+    ## return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict)
+    # OSS Code
+    # 현재 디렉토리가 git repo인지 판단
+    isgit = isGitRepo()
 
+    if isgit:
+        parsed_status = gitStatus_parsing()
+        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status)
+    
+    return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=None)
+    # ====================================
 
 @app.route('/', methods=['GET'])
 def homePage():
@@ -465,6 +508,123 @@ def qrFile(var):
     return send_file(qrcode(qr_text, mode="raw"), mimetype="image/png")
     return send_file(fPath, attachment_filename=fName)
 
+# ====================================
+# OSS Code
+
+# getFileStatus:
+#   파일 이름을 받아서 untracked / modified / staging / committed 를 판단
+#   순서대로 ["untracked", "modified", "staged", ""]으로 return
+def getFileStatus(filename=""):
+    state = ["untracked", "modified", "staged", "committed"]
+    ret = 0
+
+    ## git status parsing
+    status_l = gitStatus_parsing()
+
+    untracked = status_l['untracked']
+    modified = status_l['modified']
+    staging = status_l['staged']
+    
+    for i in untracked:
+        if filename in untracked:
+            return state[0]
+    for i in modified:
+        if filename in i:
+            return state[1]
+    for i in staging:
+        if filename in i:
+            return state[2]
+    return state[3] 
+
+# isGitRepo:
+#   현재 디렉토리 내에 .git repo가 있는지 판단
+#       존재하는 경우 -> return True
+#       존재하지 않는 경우 -> return False
+def isGitRepo():
+    dList = list(filter(lambda x: os.path.isdir(x), os.listdir('.')))
+
+    if ".git" in dList:
+        return True
+    else:
+        return False
+
+# gitInit:
+#   ./laouy.html 에 선언된 git_init 버튼이 눌릴 경우 작동하는 함수
+#   현재 directory에 git init 실행
+
+
+# gitAdd:
+#   ./laouy.html 에 선언된 git_add 버튼이 눌릴 경우 작동하는 함수
+#   현재 directory에 git add 실행
+
+
+# gitRestore:
+#   ./laouy.html 에 선언된 git_restore 버튼이 눌릴 경우 작동하는 함수
+#   현재 directory에 git restore ~~ 실행
+
+
+# gitRm_untracking:
+#   ./laouy.html 에 선언된 git_rm_u 버튼이 눌릴 경우 작동하는 함수
+#   현재 directory에 git rm --cached 실행
+
+
+# gitRm_deleting:
+#   ./laouy.html 에 선언된 git_rm_d 버튼이 눌릴 경우 작동하는 함수
+#   현재 directory에 git rm 실행
+
+
+# gitMv:
+#   ./laouy.html 에 선언된 git_mv 버튼이 눌릴 경우 작동하는 함수
+#   현재 directory에 git mv ~~ 실행
+
+
+# gitCommit:
+#   ./laouy.html 에 선언된 git_commit 버튼이 눌릴 경우 작동하는 함수
+#   현재 directory에 git commit 실행
+
+
+# gitStatus_parsing:
+#   현재 git status를 parsing
+#   staged / modified / untracked 세 개의 리스트를 하나의 dict로 return
+def gitStatus_parsing():
+    status_l = {}
+
+    global repo_str
+    repo = git.Repo(repo_str)
+    status = repo.git.status().split('\n')
+
+    try:
+        p_staged = status.index('Changes to be committed:')
+    except:
+        p_staged = -1
+    try:
+        p_modified = status.index('Changes not staged for commit:')
+    except:
+        p_modified = -1
+    try:
+        p_untracked = status.index('Untracked files:')
+    except:
+        p_untracked = -1
+
+    untracked = repo.untracked_files
+    if p_modified==-1:
+        modified = []
+    else:
+        modified = [i for i in status[p_modified:p_untracked] if '\t' in i]
+    if p_staged==-1:
+        staged = []
+    else:
+        if p_modified==-1:
+            staged = [i for i in status[p_staged:p_untracked] if '\t' in i]
+        else:
+            staged = [i for i in status[p_staged:p_modified] if '\t' in i]
+
+    status_l['staged'] = staged
+    status_l['modified'] = modified
+    status_l['untracked'] = untracked
+
+    return status_l
+# ====================================
 
 if __name__ == '__main__':
     local = "127.0.0.1"
