@@ -83,6 +83,12 @@
                 </form>
             {% endif %}
 
+			{% if dir_i.state in ["modified", "staged"] %}
+            <form id="git_menu_restore" class="git" action="/git_restore/{{currentDir}}/{{dir_i.f_complete}}/{{dir_i.state}}" method="POST">
+                <button id="git_restore" class="git" style="margin-bottom:6px;margin-top:3px;">Git Restore</button>
+            </form>
+            {% endif %}
+
             {% if dir_i.state == "committed" %}
             <form id="git_menu_untracking" class="git" action="/git_rm_u/{{currentDir}}/{{dir_i.f_complete}}/{{dir_i.state}}" method="POST">
                 <button id="git_untracking" class="git" style="margin-bottom:6px;margin-top:3px;">Untracking</button>
