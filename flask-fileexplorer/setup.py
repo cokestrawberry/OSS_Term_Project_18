@@ -204,7 +204,17 @@ def getDirList():
     # print(os.stat(os.getcwd()))
     for i in dList:
         if(hidden(curDir+'/'+i) == False):
+            # ===============================
+            # orgin
+            # image = 'folder5.png'
+            # OSS code
             image = 'folder5.png'
+            try:
+                if '.git' in list(os.listdir(curDir+'/'+i)):
+                    image = 'folder5_g.png'
+            except:
+                print()
+            # ===============================
             if len(i) > maxNameLength:
                 dots = "..."
             else:
