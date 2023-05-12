@@ -552,6 +552,20 @@ def isGitRepo():
 #   ./laouy.html 에 선언된 git_init 버튼이 눌릴 경우 작동하는 함수
 #   현재 directory에 git init 실행
 
+@app.route('/git_init/', methods=['POST'])
+@app.route('/git_init/<path:var>', methods=['POST'])
+
+def gitInit(var=""):
+    global repo_str
+
+    curDir = var
+
+    repo = git.Repo.init(curDir)
+    repo_str = curDir
+
+    print("git init done")
+    return filePage(var)
+
 
 # gitAdd:
 #   ./laouy.html 에 선언된 git_add 버튼이 눌릴 경우 작동하는 함수
