@@ -589,6 +589,27 @@ def gitAdd(var=""):
 #   ./laouy.html 에 선언된 git_restore 버튼이 눌릴 경우 작동하는 함수
 #   현재 directory에 git restore ~~ 실행
 
+@app.route('/git_restore/', methods=['POST'])
+@app.route('/git_restore/<path:var>', methods=['POST'])
+def gitRestore(var=""):
+    fn = var.split('/')[-2]
+    fs = var.split('/')[-1]
+    var = '/'.join(var.split('/')[:-2])
+
+    repo = git.Repo(var)
+
+    cmd = "git restore "
+    if fs=="modified":
+        cmd = cmd + fn
+        os.system(cmd)
+        print("git restore " + fn + " done")
+    elif fs=="staged":
+        cmd = cmd + "--staged " + fn
+        print(cmd)
+        os.system(cmd)
+        print("git restore --staged " + fn + " done")
+
+    return filePage(var)
 
 # gitRm_untracking:
 #   ./laouy.html 에 선언된 git_rm_u 버튼이 눌릴 경우 작동하는 함수
