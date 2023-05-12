@@ -566,16 +566,51 @@ def isGitRepo():
 # gitRm_untracking:
 #   ./laouy.html 에 선언된 git_rm_u 버튼이 눌릴 경우 작동하는 함수
 #   현재 directory에 git rm --cached 실행
+@app.route('/git_rm_u/', methods=['POST'])
+@app.route('/git_rm_u/<path:var>', methods=['POST'])
+def gitRm_u(var=""):
+    fn = var.split('/')[-2]
+    fs = var.split('/')[-1]
+    var = '/'.join(var.split('/')[:-2])
 
+    cmd = 'git rm --cached ' + fn
+    os.system(cmd)
+    print(cmd + " done")
+
+    return filePage(var)
 
 # gitRm_deleting:
 #   ./laouy.html 에 선언된 git_rm_d 버튼이 눌릴 경우 작동하는 함수
 #   현재 directory에 git rm 실행
+@app.route('/git_rm_d/', methods=['POST'])
+@app.route('/git_rm_d/<path:var>', methods=['POST'])
+def gitRm_d(var=""):
+    fn = var.split('/')[-2]
+    fs = var.split('/')[-1]
+    var = '/'.join(var.split('/')[:-2])
 
+    cmd = 'git rm ' + fn
+    os.system(cmd)
+    print(cmd + " done")
+
+    return filePage(var)
 
 # gitMv:
 #   ./laouy.html 에 선언된 git_mv 버튼이 눌릴 경우 작동하는 함수
 #   현재 directory에 git mv ~~ 실행
+@app.route('/git_mv/', methods=['POST'])
+@app.route('/git_mv/<path:var>', methods=['POST'])
+def gitMv(var=""):
+    fn = var.split('/')[-1]
+    var = '/'.join(var.split('/')[:-1])
+
+    rename = request.form['mv_name']
+    cmd = 'git mv ' + fn + ' ' + rename
+    os.system(cmd)
+
+    print(cmd + " done")
+
+    return filePage(var)
 
 
 # gitCommit:
