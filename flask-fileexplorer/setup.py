@@ -680,6 +680,8 @@ def gitCommit(var=""):
     repo = git.Repo(var)
 
     com_msg = request.form['commit_msg']
+    if com_msg=='':
+        com_msg = "blank msg"
     
     repo.index.commit(com_msg)
 
