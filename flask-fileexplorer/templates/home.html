@@ -12,11 +12,11 @@
     <nav class="nav">
         <ul>
             {% if isgit==false %}
-            <li>
-                <form id="git_menu_init" class="git" action="/git_init/{{currentDir}}" method="POST">
-                    <button id="git_init" class="git" style="margin-bottom:6px; margin-top:3px;">Git Init</button>
-                </form>
-            </li>
+                <li>
+                    <form id="git_menu_init" class="git" action="/git_init/{{currentDir}}" method="POST">
+                        <button id="git_init" class="git" style="margin-bottom:6px; margin-top:3px;">Git Init</button>
+                    </form>
+                </li>
             {% endif %}
 
             <label style="font-size:large;font-weight:bold;">Git Menu</label>
@@ -76,11 +76,13 @@
                     </p>
                 </p>
             </a>
-            <!--
-                ============================================================
-                OSS CODE
-                - 각각에 대한 파일 컨트롤 메뉴 버튼 제공
-            -->
+
+            {% if dir_i.state in ["untracked", "modified"] %}
+                <form id="git_menu_add" class="git" action="/git_add/{{currentDir}}/{{dir_i.f_complete}}" method="POST" >
+                    <button id="git_add" class="git" style="margin-bottom:6px; margin-top:3px;">Git Add</button>
+                </form>
+            {% endif %}
+
             {% if dir_i.state == "committed" %}
             <form id="git_menu_untracking" class="git" action="/git_rm_u/{{currentDir}}/{{dir_i.f_complete}}/{{dir_i.state}}" method="POST">
                 <button id="git_untracking" class="git" style="margin-bottom:6px;margin-top:3px;">Untracking</button>

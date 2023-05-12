@@ -563,13 +563,26 @@ def gitInit(var=""):
     repo = git.Repo.init(curDir)
     repo_str = curDir
 
-    print("git init done")
+    # print("git init done")
     return filePage(var)
 
 
 # gitAdd:
 #   ./laouy.html 에 선언된 git_add 버튼이 눌릴 경우 작동하는 함수
 #   현재 directory에 git add 실행
+
+@app.route('/git_add/', methods=['POST'])
+@app.route('/git_add/<path:var>', methods=['POST'])
+def gitAdd(var=""):
+    f = var.split('/')[-1]
+    var = '/'.join(var.split('/')[:-1])
+    
+    cmd = 'git add ' + f
+    print(cmd)
+    os.system(cmd)
+
+    # print("git add " + f + " done")
+    return filePage(var)
 
 
 # gitRestore:
