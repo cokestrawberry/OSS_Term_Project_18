@@ -1,4 +1,13 @@
 # OSS_Term_Project_18
+
+--------
+
+## Member: 
+__김서해, 김승진, 임종승, 허지범__
+
+* __GitHub Repository address:__ [OSS_Term_Project_18](https://github.com/cokestrawberry/OSS_Term_Project_18)
+
+
 Repository for Chungang UNIV. Dept. of SW OSS term project team 18
 
 We started our project based on &lt;WIFIle&gt;
@@ -39,7 +48,7 @@ This is how to use our &lt;file manager with git command(working title)&gt;
     "Favorites":    ["C://Users//Administrator//Documents","C://Users//Administrator//Downloads"],
     ```
 ------------------
-## How to use
+## How to use and Feature that need to be implemented
 
 With name of command on buttons, you can intuitively know how to use.
 
@@ -80,8 +89,6 @@ With name of command on buttons, you can intuitively know how to use.
 * file system analysis : &lt;WIFIle&gt;
 [Github address](https://github.com/reallyrehan/flask-fileexplorer)
   * features: Python Web App.
-    - License: MIT
-    
     - Language: Python
 
     - Platform: Windows / Mac / Linux
@@ -161,3 +168,13 @@ With name of command on buttons, you can intuitively know how to use.
 
       Therefore, after everyone has completed development, proceed with the merge
       Create a "maintenance" branch to hotfix errors on the UI.
+
+-------------
+## Collaboration History
+
+- Commit history over time
+![commit_history](commit_history.png)
+
+- Simplified commit history
+![simple_commit_history](simple_commit_history.png)
+There are omitted or increased parts to make the overall flow easier to understand.
