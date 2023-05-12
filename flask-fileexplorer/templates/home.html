@@ -11,11 +11,14 @@
 <aside class="sidebar_git" style="position:fixed;width:17%;height:100vh;">
     <nav class="nav">
         <ul>
-            <!--
-                ============================================================
-                OSS CODE
-                - Git Menu
-            -->
+            {% if isgit==false %}
+            <li>
+                <form id="git_menu_init" class="git" action="/git_init/{{currentDir}}" method="POST">
+                    <button id="git_init" class="git" style="margin-bottom:6px; margin-top:3px;">Git Init</button>
+                </form>
+            </li>
+            {% endif %}
+
             <label style="font-size:large;font-weight:bold;">Git Menu</label>
             <!--
                 Done
