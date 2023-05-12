@@ -581,7 +581,16 @@ def isGitRepo():
 # gitCommit:
 #   ./laouy.html 에 선언된 git_commit 버튼이 눌릴 경우 작동하는 함수
 #   현재 directory에 git commit 실행
+@app.route('/git_commit/', methods=['POST'])
+@app.route('/git_commit/<path:var>', methods=['POST'])
+def gitCommit(var=""):
+    repo = git.Repo(var)
 
+    com_msg = request.form['commit_msg']
+    
+    repo.index.commit(com_msg)
+
+    return filePage(var)
 
 # gitStatus_parsing:
 #   현재 git status를 parsing

@@ -17,6 +17,69 @@
                 - Git Menu
             -->
             <label style="font-size:large;font-weight:bold;">Git Menu</label>
+            
+
+            {% if isgit==True %}
+                {% if parsed_status["staged"]|length >0 %}
+            <li>
+                <form id="git_menu_commit" class="git" action="/git_commit/{{currentDir}}" method="POST" style="display:none;">
+                    <button id="git_commit" class="git" style="margin-bottom:6px;margin-top:3px;">Git Commit</button>
+                    <input id="commit_msg" class="git" name="commit_msg" type="text" style="width:100%;" placeholder="please input commit message">
+                </form>
+                <button id="git_commit_show_msgbox" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="commit_msgbox()">Git Commit</button>
+            </li>
+                {% endif %}
+            <hr style="width:100%;color:black;";>
+
+            {% if parsed_status["staged"]|length >0 %}
+            <label style="font-size:medium;font-weight:bold;">staged</label>
+            {% endif %}
+            {% for item in parsed_status["staged"] %}
+            <div class="git_status_staged">
+                <ul>
+                    <li>
+                        <p style="color:black;" data-toggle="tooltip" data-placement="right">
+                            {{item}}
+                        </p>
+                    </li>
+                </ul>
+            </div>
+            {% endfor %}
+
+            {% if parsed_status["modified"]|length >0 %}
+            <label style="font-size:medium;font-weight:bold;">modified</label>
+            {% endif %}
+            {% for item in parsed_status["modified"] %}
+            <div class="git_status_modified">
+                <ul>
+                    <li>
+                        <p style="color:black;" data-toggle="tooltip" data-placement="right">
+                            {{item}}
+                        </p>
+                    </li>
+                </ul>
+            </div>
+            {% endfor %}
+
+            {% if parsed_status["untracked"]|length >0 %}
+            <label style="font-size:medium;font-weight:bold;">untracked</label>
+            {% endif %}
+            {% for item in parsed_status["untracked"] %}
+            <div class="git_status_untracked">
+                <ul>
+                    <li>
+                        <p style="color:black;" data-toggle="tooltip" data-placement="right">
+                            {{item}}
+                        </p>
+                    </li>
+                </ul>
+            </div>
+            {% endfor %}
+            <hr style="width:100%;color:black;";>
+            <!--
+                차후에 git status / git log를 표시하기 위한 공간
+            -->
+            {% endif %}            
             <!--
                 Done
                 ============================================================
