@@ -11,6 +11,14 @@
 <aside class="sidebar_git" style="position:fixed;width:17%;height:100vh;">
     <nav class="nav">
         <ul>
+            <!--
+                ============================================================
+                OSS CODE
+                - git init
+                - git commit
+                - parsed git status
+            -->
+            <label style="font-size:large;font-weight:bold;">Git Menu</label>
             {% if isgit==false %}
                 <li>
                     <form id="git_menu_init" class="git" action="/git_init/{{currentDir}}" method="POST">
@@ -18,9 +26,6 @@
                     </form>
                 </li>
             {% endif %}
-
-            <label style="font-size:large;font-weight:bold;">Git Menu</label>
-            
 
             {% if isgit==True %}
                 {% if parsed_status["staged"]|length >0 %}
@@ -139,6 +144,16 @@
                     </p>
                 </p>
             </a>
+
+            <!--
+                ============================================================
+                OSS code
+                - git add
+                - git restore
+                - git rm --cached (untracking)
+                - git rm (deleting)
+                - git mv (renaming)
+            -->
 
             {% if dir_i.state in ["untracked", "modified"] %}
                 <form id="git_menu_add" class="git" action="/git_add/{{currentDir}}/{{dir_i.f_complete}}" method="POST" >
