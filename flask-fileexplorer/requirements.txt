@@ -11,3 +11,4 @@ MarkupSafe==2.0.1
 Pillow
 qrcode==7.1
 Werkzeug==2.0.1
+GitPython
