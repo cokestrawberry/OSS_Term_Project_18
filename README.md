@@ -135,7 +135,8 @@ With name of command on buttons, you can intuitively know how to use.
 
     => MIT
 
-    :
+    : First, following base file explorer program's license, we selected MIT License.
+    Furthermore, we found that there is lots of groups to try implementation of git to existing file system. To contribute other developer group, even it's small amount, we selected MIT License.
 
   - Expression method when one file has multiple states
 
