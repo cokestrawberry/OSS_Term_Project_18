@@ -341,10 +341,10 @@ def filePage(var=""):
         parsed_status = gitStatus_parsing()
         repo = git.Repo(var)
         try:
-            cur_branch = '<b>(' + repo.active_branch.name + ')</b>'
+            cur_branch = repo.active_branch.name
         except:
             if(repo.head.is_detached):
-                cur_branch = '<b>(DETACHED_HEAD)</b>'
+                cur_branch = 'DETACHED_HEAD'
             else:
                 cur_branch = ''
         return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, currentBranch_name = cur_branch)
