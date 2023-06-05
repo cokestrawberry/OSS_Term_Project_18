@@ -204,7 +204,17 @@ def getDirList():
     # print(os.stat(os.getcwd()))
     for i in dList:
         if(hidden(curDir+'/'+i) == False):
+            # ===============================
+            # orgin
+            # image = 'folder5.png'
+            # OSS code
             image = 'folder5.png'
+            try:
+                if '.git' in list(os.listdir(curDir+'/'+i)):
+                    image = 'folder5_g.png'
+            except:
+                print()
+            # ===============================
             if len(i) > maxNameLength:
                 dots = "..."
             else:
@@ -672,7 +682,18 @@ def gitMv(var=""):
 # gitCommit:
 #   ./laouy.html 에 선언된 git_commit 버튼이 눌릴 경우 작동하는 함수
 #   현재 directory에 git commit 실행
+@app.route('/git_commit/', methods=['POST'])
+@app.route('/git_commit/<path:var>', methods=['POST'])
+def gitCommit(var=""):
+    repo = git.Repo(var)
 
+    com_msg = request.form['commit_msg']
+    if com_msg=='':
+        com_msg = "blank msg"
+    
+    repo.index.commit(com_msg)
+
+    return filePage(var)
 
 # gitStatus_parsing:
 #   현재 git status를 parsing
@@ -716,7 +737,12 @@ def gitStatus_parsing():
 
     return status_l
 # ====================================
+# Feature 1 : Branch Management
 
+
+
+
+# ====================================
 if __name__ == '__main__':
     local = "127.0.0.1"
     public = '0.0.0.0'
