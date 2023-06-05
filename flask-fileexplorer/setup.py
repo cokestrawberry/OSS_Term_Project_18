@@ -349,6 +349,7 @@ def filePage(var=""):
 
     if isgit:
         parsed_status = gitStatus_parsing()
+        branch_list = getBranchNameList()
         repo = git.Repo(var)
         try:
             cur_branch = repo.active_branch.name
@@ -357,7 +358,7 @@ def filePage(var=""):
                 cur_branch = 'DETACHED_HEAD'
             else:
                 cur_branch = ''
-        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, currentBranch_name = cur_branch)
+        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, currentBranch_name = cur_branch, branch_list=branch_list)
     
     return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=None)
     # ====================================
@@ -739,7 +740,23 @@ def gitStatus_parsing():
 # ====================================
 # Feature 1 : Branch Management
 
+# 커밋 히스토리 유무를 판단
+def isNoneCommit():
+    global repo_str
+    repo = git.Repo(repo_str)
+    return repo.heads==[]
 
+# GET_BRANCH_LIST
+# 현재 디렉토리에 저장된 브랜치명을 리스트로 반환
+def getBranchNameList():
+    global repo_str
+    repo = git.Repo(repo_str)
+    branch_name = []
+    for branch in repo.heads:
+        branch_name.append(branch.name)
+    if isNoneCommit():
+        branch_name.append(repo.active_branch.name)
+    return branch_name
 
 
 # ====================================
