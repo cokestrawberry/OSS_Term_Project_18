@@ -17,6 +17,12 @@ import filetype
 # OSS Code
 import git
 repo_str = ""
+global is_branch
+is_branch = 0
+global branch_name_now
+branch_name_now = "main"
+global branch_name_list
+branch_name_list = []
 # ====================================
 
 from urllib.parse import unquote
@@ -349,7 +355,7 @@ def filePage(var=""):
 
     if isgit:
         parsed_status = gitStatus_parsing()
-        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status)
+        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, is_branch=is_branch)
     
     return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=None)
     # ====================================
@@ -558,6 +564,16 @@ def isGitRepo():
     else:
         return False
 
+#isBranchOn
+#   branch가 설정되어 있는지 판단
+#       설정되어 있으면 -> return True
+#       설정되어 있지 않으면 -> return False
+def isBranchOn():
+    if is_branch == 0:
+        return False
+    if is_branch >= 1:
+        return True
+
 # gitInit:
 #   ./laouy.html 에 선언된 git_init 버튼이 눌릴 경우 작동하는 함수
 #   현재 directory에 git init 실행
@@ -594,6 +610,99 @@ def gitAdd(var=""):
     # print("git add " + f + " done")
     return filePage(var)
 
+# git branch
+#   git branch 버튼이 눌릴 경우 작동
+#   branch명을 받아서 해당 이름의 브랜치 생성
+
+@app.route('/git_branch', methods=['POST'])
+@app.route('/git_branch/<path:var>', methods=['POST'])
+#create
+def gitBranch(var=""):
+    f = var.split('/')[-1]
+    var = '/'.join(var.split('/')[:-1])
+    is_branch += 1
+    
+    branch_name = request.form['branch_name_to_create']
+    
+    #if branch_name_list.count(branch_name) > 0:
+        #error message 출력 - 이미 있는 branch
+    
+    #if branch_name=='':
+        #error message 출력 - 브랜치 이름 입력할 것
+    
+    branch_name_list.append(branch_name)
+    if branch_name=='':
+        branch_name = "new_branch"
+    
+    cmd = 'git branch ' + branch_name   
+    print(cmd)
+    os.system(cmd)
+    
+    return filePage(var)
+
+@app.route('/git_branch', methods=['POST'])
+@app.route('/git_branch/<path:var>', methods=['POST'])
+#delete
+def gitDelete(var=""):
+    f = var.split('/')[-1]
+    var = '/'.join(var.split('/')[-1])
+    
+    branch_name = request.form['branch_name_to_delete']
+    
+    #if branch_name=='':
+        #error message 출력 - 브랜치 이름 입력할 것
+    
+    #if branch_name_list.count(branch_name) == 0:
+        #error message 출력 - 그런 브랜치 없음
+        
+    del branch_name_list[branch_name_list.index(branch_name)]
+    
+    cmd = 'git branch -d ' + branch_name
+    print(cmd)
+    os.system(cmd)
+    
+    return filePage(var)
+
+@app.route('/git_branch', methods=['POST'])
+@app.route('/git_branch/<path:var>', methods=['POST'])
+#rename
+#새 이름 입력받아야 함 (git mv 참조)
+def gitDelete(var=""):
+    f = var.split('/')[-1]
+    var = '/'.join(var.split('/')[-1])
+    
+    branch_name = request.form['branch_name_to_rename']
+    if branch_name=='':
+        branch_name = "new_branch"
+    
+    cmd = 'git branch -m ' + branch_name + ' ' + branch_name_now
+    print(cmd)
+    os.system(cmd)
+    
+    return filePage(var)
+
+@app.route('/git_branch', methods=['POST'])
+@app.route('/git_branch/<path:var>', methods=['POST'])
+#checkout
+#checkout할 브랜치 명 입력받아야 함 (git mv 참조)
+def gitDelete(var=""):
+    f = var.split('/')[-1]
+    var = '/'.join(var.split('/')[-1])
+    
+    branch_name = request.form['branch_name_to_checkout']
+    
+    #if branch_name_list.count(branch_name) == 0:
+        #error message 출력 - 그런 브랜치 없음
+    
+    #if branch_name=='':
+        #error message 출력
+    
+    cmd = 'git checkout ' + branch_name
+    branch_name_now = branch_name
+    print(cmd)
+    os.system(cmd)
+    
+    return filePage(var)
 
 # gitRestore:
 #   ./laouy.html 에 선언된 git_restore 버튼이 눌릴 경우 작동하는 함수
@@ -728,6 +837,7 @@ def gitStatus_parsing():
     status_l['untracked'] = untracked
 
     return status_l
+    
 # ====================================
 
 if __name__ == '__main__':
