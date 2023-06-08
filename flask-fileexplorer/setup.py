@@ -682,37 +682,13 @@ def gitMv(var=""):
 def git_merge(var=""):
     var = '/'.join(var.split('/')[:-1])
     tar_branch = request.form['branch_name_to_merge']
-    cmd = "git merge " + tar_branch
-    os.system(cmd)
-    
-    
-    global repo_str
-    repo = git.Repo(repo_str)
-    status = repo.git.status().split(' ')
-    
-    try:
-        success = status.index('Merge')
-    except:
-        success = -1
-    try:
-        no_such_name = status.index('error:')
-    except:
-        no_such_name = -1
-    try:
-        conflict = status.index('CONFLICT:')
-    except:
-        conflict = -1
-    
-    if success != -1:
-        messagebox.showinfo("Success","Merge Success.")
+    cmd = "git merge " + tar_branch + " | findstr error"
+    test_str = os.system(cmd)
+
+    if test_str != "":
+        messagebox.showerror("Failed","Merge Failed")
     else:
-        if no_such_name != -1:
-            messagebox.showerror("No such branch","There is no such branch")
-        else:
-            if conflict != -1:
-                messagebox.showerror("Conflict","Conflict Occurred")
-            else:
-                messagebox.showerror("Unknown Error","Unknown Error")
+        messagebox.showinfo("Success","Merge Success.")
     
     return filePage(var)
 

@@ -9,7 +9,7 @@
 </script>
 
 <script>
-    function branch_created_msgbox(){
+    function branch_msgbox() {
         document.getElementById('git_merge_show_msgbox').style.display = 'none';
         document.getElementById('git_menu_merge').style.display = 'block';
     }
@@ -24,6 +24,7 @@
                 - git init
                 - git commit
                 - parsed git status
+                - merge
             -->
             <label style="font-size:large;font-weight:bold;">Git Menu</label>
             {% if isgit==false %}
