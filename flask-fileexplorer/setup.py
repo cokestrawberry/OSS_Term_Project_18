@@ -814,8 +814,8 @@ def gitCommit(var=""):
 @app.route('/git_branch/<path:var>', methods=['POST']) 
 def get_branch_now(var=""):
     repo = git.Repo(var)
-    
-    return repo.active_branch()
+    branch_name_now = repo.active_branch()
+    return filePage(var)
 
 #브랜치 리스트 반환
 @app.route('/git_branch/', methods=['POST'])
