@@ -617,7 +617,7 @@ def gitAdd(var=""):
 @app.route('/git_branch', methods=['POST'])
 @app.route('/git_branch/<path:var>', methods=['POST'])
 #create
-def gitBranch(var=""):
+def gitCreate_branch(var=""):
     f = var.split('/')[-1]
     var = '/'.join(var.split('/')[:-1])
     is_branch += 1
@@ -643,7 +643,7 @@ def gitBranch(var=""):
 @app.route('/git_branch', methods=['POST'])
 @app.route('/git_branch/<path:var>', methods=['POST'])
 #delete
-def gitDelete(var=""):
+def gitDelete_branch(var=""):
     f = var.split('/')[-1]
     var = '/'.join(var.split('/')[-1])
     
@@ -667,7 +667,7 @@ def gitDelete(var=""):
 @app.route('/git_branch/<path:var>', methods=['POST'])
 #rename
 #새 이름 입력받아야 함 (git mv 참조)
-def gitDelete(var=""):
+def gitRename_branch(var=""):
     f = var.split('/')[-1]
     var = '/'.join(var.split('/')[-1])
     
@@ -685,7 +685,7 @@ def gitDelete(var=""):
 @app.route('/git_branch/<path:var>', methods=['POST'])
 #checkout
 #checkout할 브랜치 명 입력받아야 함 (git mv 참조)
-def gitDelete(var=""):
+def gitCheckout_branch(var=""):
     f = var.split('/')[-1]
     var = '/'.join(var.split('/')[-1])
     
