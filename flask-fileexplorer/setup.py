@@ -356,7 +356,7 @@ def filePage(var=""):
 
     if isgit:
         parsed_status = gitStatus_parsing()
-        branch_list = get_branch_list()
+        branch_list = get_branch_now()
         return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, is_branch=is_branch, branch_list=branch_list)
     
     return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=None, is_branch=is_branch, branch_list=branch_list)
@@ -710,7 +710,7 @@ def gitCheckout_branch(var=""):
         #error message 출력
     
     cmd = 'git checkout ' + branch_name
-    branch_name_now = branch_name
+    branch_name_now = get_branch_now()
     print(cmd)
     os.system(cmd)
     
@@ -810,16 +810,11 @@ def gitCommit(var=""):
 
 #get_branch_list
 #branch list 찾아서 저장
-def get_branch_list():
-    name_l = []
-    
+def get_branch_now():
     global repo_str
     repo = git.Repo(repo_str)
-    name = repo.git.status().split('\n')
+    return repo.active_branch()
     
-    name_l.append(name)
-    
-    return name_l
     
 
 # gitStatus_parsing:
