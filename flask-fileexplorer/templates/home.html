@@ -8,6 +8,50 @@
     }
 </script>
 
+
+<!--=============================
+    Feature 1 : Branch Management 
+    =============================-->
+    
+{% if isgit==True %}
+
+<style>
+    .branch {margin-bottom:6px; margin-top:3px;}
+</style>
+
+<aside style="position:fixed;right:5vw;width:10vw;height:100vh;">
+ <div class="branch menu tab" style="font-size:large;font-weight:bold;"> Branch Menu</div>
+ <hr style="width:100%;color:black;";>
+ <ul>
+    <!-- 모달 폼 버튼
+        Create/Checkout/Delete/Rename
+        ** 클릭하면 body:padding-right 값 변하여 버튼이 밀리는 문제있음 -->
+  <li>
+   <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#create_branch">
+    Create
+   </button>
+  </li>
+  <li>
+   <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#checkout_branch">
+    Checkout
+   </button>
+  </li>
+  <li>
+   <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#delete_branch">
+    Delete
+   </button>
+  </li>
+  <li>
+   <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#rename_branch">
+    Rename
+   </button>
+  </li>
+ </ul>
+</aside>
+
+{% endif %}
+
+
 <aside class="sidebar_git" style="position:fixed;width:17%;height:100vh;">
     <nav class="nav">
         <ul>
