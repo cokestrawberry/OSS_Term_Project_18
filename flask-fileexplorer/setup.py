@@ -43,6 +43,9 @@ with open(config) as json_data_file:
 hiddenList = data["Hidden"]
 favList = data["Favorites"]
 password = data["Password"]
+    ## Config get User_id and User_token
+user_id = data["user_id"]
+user_token = data["user_token"]
 
 currentDirectory = data["rootDir"]
 osWindows = False  # Not Windows
@@ -564,7 +567,6 @@ def isGitRepo():
 
 @app.route('/git_init/', methods=['POST'])
 @app.route('/git_init/<path:var>', methods=['POST'])
-
 def gitInit(var=""):
     global repo_str
 
@@ -728,6 +730,95 @@ def gitStatus_parsing():
     status_l['untracked'] = untracked
 
     return status_l
+
+# gitClone:
+#   ./layout.html 에 선언된 git_clone 버튼이 눌릴 경우 작동하는 함수
+#       public repo -> get repo. address
+#       private repo -> get repo address / id / access token
+@app.route('/git_clone/', methods=['POST'])
+@app.route('/git_clone/<path:var>', methods=['POST'])
+def gitClone(var=""):
+    ## get repo address
+    clone_repo_addr = request.form['repo_addr']
+    repo_state = request.form['repo_state']
+
+    repo_state = "public" if repo_state=="public" else "private"
+
+    ## check repo is public / private
+    if repo_state=="public":
+        ## public
+        cmd = "git clone " + clone_repo_addr
+    else:
+        ## private
+        ## cmd sample: git clone https://[user_id]:[user_token]@github.com/john-doe/my-private-repo.git
+        ### private -> check if user_id and user_token in "config.json"
+        global user_id
+        global user_token
+        if (user_id=="" or user_token==""):
+            #### get user id / user_token
+            user_id = request.form['user_id']
+            user_token = request.form['user_token']
+        
+        ### id or token update
+        id = request.form['user_id']
+        token = request.form['user_token']
+        if id!="":
+            user_id = id
+        if token!="":
+            user_token = token
+
+        ### if config X and input X => do nothing
+        if (user_id=="" and user_token=="") and (id=="" and token==""):
+            cmd = -1
+        else:
+            #### update user info -> config.json
+            edit_config_json(uid=user_id, utk=user_token)   
+            #### cmd
+            r = clone_repo_addr.split("/")
+            r = "/".join(r[r.index("github.com"):])
+            cmd = "git clone https://" + user_id + ":" + user_token + "@" + r
+
+    if cmd==-1:
+        print("="*20)
+        print("input Error")
+        print("="*20)
+        return filePage(var)
+    else:
+        os.system("cd " + var)
+        os.system(cmd)
+
+    print("="*20)
+    print(cmd + " done")
+    print("="*20)
+
+    return filePage(var)
+
+def edit_config_json(hidden=hiddenList, favL=favList, pw=password, uid=user_id, utk=user_token, rootD=currentDirectory):
+    str_json = ""
+    str_json += "{\n"
+    str_json += "\t\"Hidden\":\t["
+    for i in hiddenList:
+        str_json += "\"" + str(i) + "\""
+    str_json += "],\n"
+    str_json += "\t\"Favorites\":\t["
+    for i in favList:
+        str_json += "\"" + str(i) + "\""
+        str_json += ","
+    str_json = str_json[:-1]
+    str_json += "],\n"
+    str_json += "".join(["\t\"Password\":\t", "\""+str(password)+"\""])
+    str_json += ",\n"
+    str_json += "".join(["\t\"rootDir\":\t", "\""+str(currentDirectory)+"\""])
+    str_json += ",\n"
+    str_json += "".join(["\t\"user_id\":\t", "\""+str(user_id)+"\""])
+    str_json += ",\n"
+    str_json += "".join(["\t\"user_token\":\t", "\""+str(user_token)+"\""])
+    str_json += "\n"
+    str_json += "}"
+    
+    f = open(config, "w")
+    f.write(str_json)
+    f.close()
 # ====================================
 
 if __name__ == '__main__':
