@@ -809,14 +809,23 @@ def gitCommit(var=""):
 
     return filePage(var)
 
-#get_branch_list
-#branch list 찾아서 저장
-def get_branch_now():
-    global repo_str
-    repo = git.Repo(repo_str)
+#현재 브랜치 명 반환
+@app.route('/git_commit/', methods=['POST'])
+@app.route('/git_commit/<path:var>', methods=['POST']) 
+def get_branch_now(var=""):
+    repo = git.Repo(var)
+    
     return repo.active_branch()
+
+#브랜치 리스트 반환
+@app.route('/git_commit/', methods=['POST'])
+@app.route('/git_commit/<path:var>', methods=['POST'])    
+def show_branch_list(var=""):
+    var = '/'.join(var.split('/')[:-1])
+    cmd = "git branch -v"
+    os.system(cmd)
     
-    
+    return filePage(var)
 
 # gitStatus_parsing:
 #   현재 git status를 parsing
