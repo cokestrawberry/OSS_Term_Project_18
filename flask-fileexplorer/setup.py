@@ -307,6 +307,7 @@ def getFileList():
 @app.route('/files/<path:var>', methods=['GET'])
 def filePage(var=""):
     global default_view
+    global is_branch
     # ====================================
     # OSS Code
     global repo_str
@@ -569,6 +570,7 @@ def isGitRepo():
 #       설정되어 있으면 -> return True
 #       설정되어 있지 않으면 -> return False
 def isBranchOn():
+    global is_branch
     if is_branch == 0:
         return False
     if is_branch >= 1:
@@ -618,6 +620,8 @@ def gitAdd(var=""):
 @app.route('/git_branch/<path:var>', methods=['POST'])
 #create
 def gitCreate_branch(var=""):
+    global is_branch
+    global branch_name_list
     f = var.split('/')[-1]
     var = '/'.join(var.split('/')[:-1])
     is_branch += 1
@@ -647,6 +651,7 @@ def gitDelete_branch(var=""):
     f = var.split('/')[-1]
     var = '/'.join(var.split('/')[-1])
     
+    global branch_name_list
     branch_name = request.form['branch_name_to_delete']
     
     #if branch_name=='':
@@ -668,6 +673,7 @@ def gitDelete_branch(var=""):
 #rename
 #새 이름 입력받아야 함 (git mv 참조)
 def gitRename_branch(var=""):
+    global branch_name_now
     f = var.split('/')[-1]
     var = '/'.join(var.split('/')[-1])
     
@@ -689,6 +695,8 @@ def gitCheckout_branch(var=""):
     f = var.split('/')[-1]
     var = '/'.join(var.split('/')[-1])
     
+    global branch_name_now
+    global branch_name_list
     branch_name = request.form['branch_name_to_checkout']
     
     #if branch_name_list.count(branch_name) == 0:
