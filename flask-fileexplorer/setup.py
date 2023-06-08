@@ -13,16 +13,13 @@ import json
 import zipfile
 import filetype
 
+from tkinter import *
+from tkinter import messagebox
+
 # ====================================
 # OSS Code
 import git
 repo_str = ""
-global is_branch
-is_branch = 0
-global branch_name_now
-branch_name_now = "main"
-global branch_name_list
-branch_name_list = []
 # ====================================
 
 from urllib.parse import unquote
@@ -307,7 +304,6 @@ def getFileList():
 @app.route('/files/<path:var>', methods=['GET'])
 def filePage(var=""):
     global default_view
-    global is_branch
     # ====================================
     # OSS Code
     global repo_str
@@ -356,10 +352,9 @@ def filePage(var=""):
 
     if isgit:
         parsed_status = gitStatus_parsing()
-        #branch_list = get_branch_now()
-        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, is_branch=is_branch)
+        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status)
     
-    return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=None, is_branch=is_branch)
+    return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=None)
     # ====================================
 
 @app.route('/', methods=['GET'])
@@ -566,16 +561,6 @@ def isGitRepo():
     else:
         return False
 
-#isBranchOn
-#   branch가 설정되어 있는지 판단
-#       설정되어 있으면 -> return True
-#       설정되어 있지 않으면 -> return False
-def isBranchOn():
-    global is_branch
-    if is_branch == 0:
-        return False
-    if is_branch >= 1:
-        return True
 
 # gitInit:
 #   ./laouy.html 에 선언된 git_init 버튼이 눌릴 경우 작동하는 함수
@@ -613,108 +598,7 @@ def gitAdd(var=""):
     # print("git add " + f + " done")
     return filePage(var)
 
-# git branch
-#   git branch 버튼이 눌릴 경우 작동
-#   branch명을 받아서 해당 이름의 브랜치 생성
 
-@app.route('/git_branch', methods=['POST'])
-@app.route('/git_branch/<path:var>', methods=['POST'])
-#create
-def gitCreate_branch(var=""):
-    global is_branch
-    global branch_name_list
-    f = var.split('/')[-1]
-    var = '/'.join(var.split('/')[:-1])
-    is_branch += 1
-    
-    branch_name = request.form['branch_name_to_create']
-    
-    #if branch_name_list.count(branch_name) > 0:
-        #error message 출력 - 이미 있는 branch
-    
-    #if branch_name=='':
-        #error message 출력 - 브랜치 이름 입력할 것
-    
-    branch_name_list.append(branch_name)
-    if branch_name=='':
-        branch_name = "new_branch"
-    
-    cmd = 'git branch ' + branch_name   
-    print(cmd)
-    os.system(cmd)
-    
-    return filePage(var)
-
-@app.route('/git_branch', methods=['POST'])
-@app.route('/git_branch/<path:var>', methods=['POST'])
-#delete
-def gitDelete_branch(var=""):
-    f = var.split('/')[-1]
-    var = '/'.join(var.split('/')[-1])
-    
-    global branch_name_list
-    branch_name = request.form['branch_name_to_delete']
-    
-    #if branch_name=='':
-        #error message 출력 - 브랜치 이름 입력할 것
-    
-    #if branch_name_list.count(branch_name) == 0:
-        #error message 출력 - 그런 브랜치 없음
-        
-    del branch_name_list[branch_name_list.index(branch_name)]
-    
-    cmd = 'git branch -d ' + branch_name
-    print(cmd)
-    os.system(cmd)
-    
-    return filePage(var)
-
-@app.route('/git_branch', methods=['POST'])
-@app.route('/git_branch/<path:var>', methods=['POST'])
-#rename
-#새 이름 입력받아야 함 (git mv 참조)
-def gitRename_branch(var=""):
-    global branch_name_now
-    f = var.split('/')[-1]
-    var = '/'.join(var.split('/')[-1])
-    
-    branch_name = request.form['branch_name_to_rename']
-    if branch_name=='':
-        branch_name = "new_branch"
-    
-    cmd = 'git branch -m ' + branch_name + ' ' + branch_name_now
-    del branch_name_list[branch_name_list.index(branch_name)]
-    branch_name_list.append(branch_name)
-    
-    print(cmd)
-    os.system(cmd)
-    
-    return filePage(var)
-
-@app.route('/git_branch', methods=['POST'])
-@app.route('/git_branch/<path:var>', methods=['POST'])
-#checkout
-#checkout할 브랜치 명 입력받아야 함 (git mv 참조)
-def gitCheckout_branch(var=""):
-    f = var.split('/')[-1]
-    var = '/'.join(var.split('/')[-1])
-    
-    global branch_name_now
-    global branch_name_list
-    branch_name = request.form['branch_name_to_checkout']
-    
-    #if branch_name_list.count(branch_name) == 0:
-        #error message 출력 - 그런 브랜치 없음
-    
-    #if branch_name=='':
-        #error message 출력
-    
-    cmd = 'git checkout ' + branch_name
-    branch_name_now = get_branch_now()
-    print(cmd)
-    os.system(cmd)
-    
-    return filePage(var)
 
 # gitRestore:
 #   ./laouy.html 에 선언된 git_restore 버튼이 눌릴 경우 작동하는 함수
@@ -792,6 +676,46 @@ def gitMv(var=""):
     return filePage(var)
 
 
+#git merge
+@app.route('/git_merge/', methods=['POST'])
+@app.route('/git_merge/<path:var>', methods=['POST'])
+def git_merge(var=""):
+    var = '/'.join(var.split('/')[:-1])
+    tar_branch = request.form['branch_name_to_merge']
+    cmd = "git merge " + tar_branch
+    os.system(cmd)
+    
+    
+    global repo_str
+    repo = git.Repo(repo_str)
+    status = repo.git.status().split(' ')
+    
+    try:
+        success = status.index('Merge')
+    except:
+        success = -1
+    try:
+        no_such_name = status.index('error:')
+    except:
+        no_such_name = -1
+    try:
+        conflict = status.index('CONFLICT:')
+    except:
+        conflict = -1
+    
+    if success != -1:
+        messagebox.showinfo("Success","Merge Success.")
+    else:
+        if no_such_name != -1:
+            messagebox.showerror("No such branch","There is no such branch")
+        else:
+            if conflict != -1:
+                messagebox.showerror("Conflict","Conflict Occurred")
+            else:
+                messagebox.showerror("Unknown Error","Unknown Error")
+    
+    return filePage(var)
+
 # gitCommit:
 #   ./laouy.html 에 선언된 git_commit 버튼이 눌릴 경우 작동하는 함수
 #   현재 directory에 git commit 실행
@@ -806,28 +730,6 @@ def gitCommit(var=""):
     
     repo.index.commit(com_msg)
 
-    return filePage(var)
-
-#현재 브랜치 명 반환
-@app.route('/git_branch/', methods=['POST'])
-@app.route('/git_branch/<path:var>', methods=['POST']) 
-def get_branch_now():
-    global branch_name_now
-    
-    cmd = "git branch"
-    os.system(cmd)
-    #이 결과로 받아온거 중에서 현재 브랜치 찾아야함
-    
-    return filePage(var)
-
-#브랜치 리스트 반환
-@app.route('/git_branch/', methods=['POST'])
-@app.route('/git_branch/<path:var>', methods=['POST'])    
-def show_branch_list(var=""):
-    var = '/'.join(var.split('/')[:-1])
-    cmd = "git branch -v"
-    os.system(cmd)
-    
     return filePage(var)
 
 # gitStatus_parsing:
