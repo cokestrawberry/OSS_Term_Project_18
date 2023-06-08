@@ -6,6 +6,19 @@
         document.getElementById('git_commit_show_msgbox').style.display = 'none';
         document.getElementById('git_menu_commit').style.display = 'block';
     }
+    function clone_msgbox(){
+        document.getElementById('git_clone_show_msgbox').style.display = 'none';
+        document.getElementById('git_clone_menu').style.display = 'block';
+        clone_radiobtn_pub();
+    }
+    function clone_radiobtn_pub(){
+        document.getElementById('user_id').style.display = 'none';
+        document.getElementById('user_token').style.display = 'none';
+    }
+    function clone_radiobtn_prv(){
+        document.getElementById('user_id').style.display = 'block';
+        document.getElementById('user_token').style.display = 'block';
+    }
 </script>
 
 <aside class="sidebar_git" style="position:fixed;width:17%;height:100vh;">
@@ -24,6 +37,23 @@
                     <form id="git_menu_init" class="git" action="/git_init/{{currentDir}}" method="POST">
                         <button id="git_init" class="git" style="margin-bottom:6px; margin-top:3px;">Git Init</button>
                     </form>
+                </li>
+                <!--
+                git clone button
+                -->
+                <li>
+                    <form id="git_clone_menu" class="git" action="/git_clone/{{currentDir}}" method="POST" style="display:none;">
+                        <input type="radio" id="public" name="repo_state" value="public" onclick="clone_radiobtn_pub()" checked>
+                        <label for="public">public</label>
+                        <input type="radio" id="private" name="repo_state" value="private" onclick="clone_radiobtn_prv()">
+                        <label for="private">private</label><br>
+
+                        <input id="repo_addr" class="git" name="repo_addr" type="text" style="width:100%;" placeholder="please input repo. address">
+                        <input id="user_id" class="git" name="user_id" type="text" style="width:100%;" placeholder="please input your git id" style="display:none;">
+                        <input id="user_token" class="git" name="user_token" type="text" style="width:100%;" placeholder="please input your git access token" style="display:none;">
+                        <button id="git_clone" class="git" style="margin-bottom:6px;margin-top:3px;">Git Clone</button>
+                    </form>
+                    <button id="git_clone_show_msgbox" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="clone_msgbox()">Git Clone</button>
                 </li>
             {% endif %}
 
