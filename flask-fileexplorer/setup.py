@@ -813,7 +813,9 @@ def gitCommit(var=""):
 @app.route('/git_branch/', methods=['POST'])
 @app.route('/git_branch/<path:var>', methods=['POST']) 
 def get_branch_now(var=""):
+    var = '/'.join(var.split('/')[:-1])
     repo = git.Repo(var)
+    global branch_name_now
     branch_name_now = repo.active_branch()
     return filePage(var)
 
