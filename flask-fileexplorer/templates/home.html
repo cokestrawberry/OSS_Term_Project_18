@@ -50,32 +50,30 @@
             -->
             {% if isgit==True%}
             <li>
-                <form id = "git_menu_branch" class = "git" action="/git_branch/{{currentDir}}" method="POST" style="display:none">
-                    <form id="git_menu_branch" class="git" action="/git_branch/{{currentDir}}" method="POST" style="display:none;">
-                        <button id="git_branch" class="git" style="margin-bottom:6px;margin-top:3px;">Branch Create</button>
-                        <input id="branch_name_to_create" class="git" name="branch_name_to_create" type="text" style="width:100%;" placeholder="please input branch name">
-                    </form>
-                    <button id="git_branch_show_msgbox" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="branch_created_msgbox()">Branch Create</button>
-                    {% if is_branch >= 1 %}
-                    <form id="git_menu_branch" class="git" action="/git_branch/{{currentDir}}" method="POST" style="display:none;">
-                        <button id="git_branch" class="git" style="margin-bottom:6px;margin-top:3px;">Branch Delete</button>
-                        <input id="branch_name_to_delete" class="git" name="branch_name_to_delete" type="text" style="width:100%;" placeholder="please input branch name">
-                    </form>
-                    <button id="git_branch_show_msgbox" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="branch_deleted_msgbox()">Branch Delete</button>
-
-                    <form id="git_menu_branch" class="git" action="/git_branch/{{currentDir}}" method="POST" style="display:none;">
-                        <button id="git_branch" class="git" style="margin-bottom:6px;margin-top:3px;">Branch Rename</button>
-                        <input id="branch_name_to_rename" class="git" name="branch_name_to_rename" type="text" style="width:100%;" placeholder="please input branch name">
-                    </form>
-                    <button id="git_branch_show_msgbox" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="branch_renamed_msgbox()">Branch Rename</button>
-
-                    <form id="git_menu_branch" class="git" action="/git_branch/{{currentDir}}" method="POST" style="display:none;">
-                        <button id="git_branch" class="git" style="margin-bottom:6px;margin-top:3px;">Branch Checkout</button>
-                        <input id="branch_name_to_checkout" class="git" name="branch_name_to_checkout" type="text" style="width:100%;" placeholder="please input branch name">
-                    </form>
-                    <button id="git_branch_show_msgbox" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="branch_checkout_msgbox()">Branch Checkout</button>
-                    {% endif %}
+                <form id="git_menu_branch" class="git" action="/git_branch/{{currentDir}}" method="POST" style="display:none;">
+                    <button id="git_branch" class="git" style="margin-bottom:6px;margin-top:3px;">Branch Create</button>
+                    <input id="branch_name_to_create" class="git" name="branch_name_to_create" type="text" style="width:100%;" placeholder="please input branch name">
                 </form>
+                <button id="git_branch_show_msgbox" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="branch_created_msgbox()">Branch Create</button>
+                {% if is_branch >= 1 %}
+                <form id="git_menu_branch" class="git" action="/git_branch/{{currentDir}}" method="POST" style="display:none;">
+                    <button id="git_branch" class="git" style="margin-bottom:6px;margin-top:3px;">Branch Delete</button>
+                    <input id="branch_name_to_delete" class="git" name="branch_name_to_delete" type="text" style="width:100%;" placeholder="please input branch name">
+                </form>
+                <button id="git_branch_show_msgbox" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="branch_deleted_msgbox()">Branch Delete</button>
+
+                <form id="git_menu_branch" class="git" action="/git_branch/{{currentDir}}" method="POST" style="display:none;">
+                    <button id="git_branch" class="git" style="margin-bottom:6px;margin-top:3px;">Branch Rename</button>
+                    <input id="branch_name_to_rename" class="git" name="branch_name_to_rename" type="text" style="width:100%;" placeholder="please input branch name">
+                </form>
+                <button id="git_branch_show_msgbox" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="branch_renamed_msgbox()">Branch Rename</button>
+
+                <form id="git_menu_branch" class="git" action="/git_branch/{{currentDir}}" method="POST" style="display:none;">
+                    <button id="git_branch" class="git" style="margin-bottom:6px;margin-top:3px;">Branch Checkout</button>
+                    <input id="branch_name_to_checkout" class="git" name="branch_name_to_checkout" type="text" style="width:100%;" placeholder="please input branch name">
+                </form>
+                <button id="git_branch_show_msgbox" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="branch_checkout_msgbox()">Branch Checkout</button>
+                {% endif %}
             </li>
                 
             
@@ -83,6 +81,19 @@
             <!--
                 branching
             -->
+
+            <label style="font-size:medium;font-weight:bold;">Branches</label>
+            {% for item in branch_list %}
+            <div class="git_branch_list">
+                <ul>
+                    <li>
+                        <p style="color:black;" data-toggle="tooltip" data-placement="right">
+                            {{item}}
+                        </p>
+                    </li>
+                </ul>
+            </div>
+            {% endfor %}
                 
             <hr style="width:100%;color:black;";>
 
@@ -134,7 +145,10 @@
             <!--
                 차후에 git status / git log를 표시하기 위한 공간
             -->
-            {% endif %}            
+            {% endif %} 
+            
+            
+
             <!--
                 Done
                 ============================================================

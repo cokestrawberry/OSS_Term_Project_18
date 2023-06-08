@@ -356,9 +356,10 @@ def filePage(var=""):
 
     if isgit:
         parsed_status = gitStatus_parsing()
-        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, is_branch=is_branch)
+        branch_list = get_branch_list()
+        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, is_branch=is_branch, branch_list=branch_list)
     
-    return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=None, is_branch=is_branch)
+    return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=None, is_branch=is_branch, branch_list=branch_list)
     # ====================================
 
 @app.route('/', methods=['GET'])
@@ -682,6 +683,9 @@ def gitRename_branch(var=""):
         branch_name = "new_branch"
     
     cmd = 'git branch -m ' + branch_name + ' ' + branch_name_now
+    del branch_name_list[branch_name_list.index(branch_name)]
+    branch_name_list.append(branch_name)
+    
     print(cmd)
     os.system(cmd)
     
@@ -803,6 +807,20 @@ def gitCommit(var=""):
     repo.index.commit(com_msg)
 
     return filePage(var)
+
+#get_branch_list
+#branch list 찾아서 저장
+def get_branch_list():
+    name_l = []
+    
+    global repo_str
+    repo = git.Repo(repo_str)
+    name = repo.git.status().split('\n')
+    
+    name_l.append(name)
+    
+    return name_l
+    
 
 # gitStatus_parsing:
 #   현재 git status를 parsing
