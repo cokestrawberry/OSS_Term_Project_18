@@ -9,7 +9,7 @@
 </script>
 
 <script>
-    function merge_msgbox(){
+    function branch_created_msgbox(){
         document.getElementById('git_merge_show_msgbox').style.display = 'none';
         document.getElementById('git_menu_merge').style.display = 'block';
     }
@@ -56,7 +56,13 @@
                 </form>
                 <button id="git_merge_show_msgbox" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="branch_msgbox()">Merge</button>
             </li>
+                
+            
             {% endif %}
+            <!--
+                branching
+            -->
+                
             <hr style="width:100%;color:black;";>
 
             {% if parsed_status["staged"]|length >0 %}
@@ -107,10 +113,7 @@
             <!--
                 차후에 git status / git log를 표시하기 위한 공간
             -->
-            {% endif %} 
-            
-            
-
+            {% endif %}            
             <!--
                 Done
                 ============================================================
