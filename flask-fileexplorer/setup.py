@@ -356,10 +356,10 @@ def filePage(var=""):
 
     if isgit:
         parsed_status = gitStatus_parsing()
-        branch_list = get_branch_now()
-        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, is_branch=is_branch, branch_list=branch_list)
+        #branch_list = get_branch_now()
+        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, is_branch=is_branch)
     
-    return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=None, is_branch=is_branch, branch_list=None)
+    return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=None, is_branch=is_branch)
     # ====================================
 
 @app.route('/', methods=['GET'])
