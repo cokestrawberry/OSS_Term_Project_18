@@ -811,11 +811,13 @@ def gitCommit(var=""):
 #현재 브랜치 명 반환
 @app.route('/git_branch/', methods=['POST'])
 @app.route('/git_branch/<path:var>', methods=['POST']) 
-def get_branch_now(var=""):
-    var = '/'.join(var.split('/')[:-1])
-    repo = git.Repo(var)
+def get_branch_now():
     global branch_name_now
-    branch_name_now = repo.active_branch()
+    
+    cmd = "git branch"
+    os.system(cmd)
+    #이 결과로 받아온거 중에서 현재 브랜치 찾아야함
+    
     return filePage(var)
 
 #브랜치 리스트 반환
