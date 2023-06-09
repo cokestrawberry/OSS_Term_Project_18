@@ -800,6 +800,18 @@ def deleteBranch(var=""):
     repo.delete_head(branch)
     return redirect('/files/' + var)
 
+# 이름 중복 - front 에서 처리
+@app.route('/rename_branch/<path:var>', methods=['POST'])
+def renameBranch(var=""):
+    repo = git.Repo(var)
+    branch = request.form['rename_select']
+    name = request.form['new_name'].strip()
+    if isNoneCommit():
+        repo.git.checkout(b=name)
+    else:
+        repo.heads[branch].rename(name)
+    return redirect('/files/' + var)
+
 # ====================================
 if __name__ == '__main__':
     local = "127.0.0.1"
