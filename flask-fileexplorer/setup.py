@@ -783,7 +783,7 @@ def createBranch(var=""):
 def checkoutBranch(var="", force=0):
     repo = git.Repo(var)
     branch = request.form['checkout_text']
-    
+
     if repo.is_dirty():
         repo.git.checkout(branch, force=True)
     elif isNoneCommit():
@@ -792,6 +792,13 @@ def checkoutBranch(var="", force=0):
         repo.git.checkout(branch)
     return redirect('/files/' + var)
 
+# Delete Branch
+@app.route('/delete_branch/<path:var>', methods=['POST'])
+def deleteBranch(var=""):
+    repo = git.Repo(var)
+    branch = request.form['delete_text']
+    repo.delete_head(branch)
+    return redirect('/files/' + var)
 
 # ====================================
 if __name__ == '__main__':
