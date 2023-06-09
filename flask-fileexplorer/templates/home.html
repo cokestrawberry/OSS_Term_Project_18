@@ -257,9 +257,8 @@ function is_duplicate(event){
 // untracked 파일은 해당 브랜치에서 삭제된 상태일 수 있으므로
 // 현재 브랜치의 changed 파일이 대상 브랜치의 untracked 파일에 해당하는지를
 // 확인하는 것만으로는 불충분함.
-
+// 동위 브랜치는 항상 checkout true
 function is_overwritten(event) {
-  
   var branch = checkout_text.val()
   var target = {{ tracked_list|safe }}[branch] // 대상 브랜치의 tracked 파일명 Array
   var src_changed = {{ changed_list|safe }} // 현재 브랜치의 modified, staged 파일명 Array
@@ -267,6 +266,10 @@ function is_overwritten(event) {
   var tracked = []
   var untracked = []
   var flag = false
+
+  if (is_same_commit(branch)) {
+    return true
+  }
 
  for (const changed_file of src_changed) {
     tracked.push(changed_file)
@@ -293,6 +296,12 @@ function is_overwritten(event) {
   return true
 }
 
+// 두 브랜치가 같은 커밋을 가리키는지 확인
+function is_same_commit(branch) {
+  var cur = "{{ currentBranch_name|safe }}"
+  var commit_list = {{ branch_commit|safe }}
+  return commit_list[cur][0] == commit_list[branch][0]
+}
 
 
 
