@@ -353,6 +353,7 @@ def filePage(var=""):
         repo = git.Repo(var)
         changed_list = getChangedList()
         tracked_list = getTrackedList()
+        untracked_list = getUntrackedList()
 
         try:
             cur_branch = repo.active_branch.name
@@ -361,7 +362,7 @@ def filePage(var=""):
                 cur_branch = 'DETACHED_HEAD'
             else:
                 cur_branch = ''
-        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, currentBranch_name = cur_branch, branch_list=branch_list, changed_list=changed_list, tracked_list=tracked_list)
+        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, currentBranch_name = cur_branch, branch_list=branch_list, changed_list=changed_list, tracked_list=tracked_list, untracked_list=untracked_list)
     
     return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=None)
     # ====================================
@@ -760,6 +761,13 @@ def getBranchNameList():
     if isNoneCommit():
         branch_name.append(repo.active_branch.name)
     return branch_name
+
+# Get UntrackedList
+# 현재 저장소의 untracked 파일명을 리스트로 반환
+def getUntrackedList():
+    global repo_str
+    status = gitStatus_parsing()
+    return status['untracked']
 
 # Get ChangedList
 # 현재 브랜치의 modified와 staged 파일명을 합쳐 하나의 리스트로 반환
