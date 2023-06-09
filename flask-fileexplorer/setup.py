@@ -824,11 +824,8 @@ def createBranch(var=""):
     repo = git.Repo(var)
     branch_name_list = getBranchNameList()
     new_branch = request.form['create_text']
+    repo.create_head(new_branch)
 
-    if isNoneCommit():
-        repo.git.checkout(b=new_branch)
-    elif new_branch not in branch_name_list:
-        repo.create_head(new_branch)        
     return redirect('/files/' + var)
 
 # Checkout Branch
@@ -839,13 +836,12 @@ def createBranch(var=""):
 def checkoutBranch(var="", force=0):
     repo = git.Repo(var)
     branch = request.form['checkout_text']
-    
+
     if force:
         repo.git.checkout(branch, force=True)
-    elif isNoneCommit():
-        repo.git.checkout(b=branch)
     else:
         repo.git.checkout(branch)
+
     return redirect('/files/' + var)
 
 # Delete Branch
@@ -854,11 +850,12 @@ def checkoutBranch(var="", force=0):
 def deleteBranch(var="", force=0):
     repo = git.Repo(var)
     branch = request.form['delete_text']
-    
+
     if force:
-        repo.delete_head(branch, force=1)
+        repo.delete_head(branch, force=True)
     else:
         repo.delete_head(branch)
+
     return redirect('/files/' + var)
 
 # 이름 중복 - front 에서 처리
@@ -866,11 +863,12 @@ def deleteBranch(var="", force=0):
 def renameBranch(var=""):
     repo = git.Repo(var)
     branch = request.form['rename_select']
-    name = request.form['new_name'].strip()
+    name = re.sub('\s', '', request.form['new_name'])
     if isNoneCommit():
         repo.git.checkout(b=name)
     else:
         repo.heads[branch].rename(name)
+
     return redirect('/files/' + var)
 
 # ====================================

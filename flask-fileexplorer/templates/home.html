@@ -64,7 +64,7 @@
             <span>&times;</span>
           </button>
         </div>
-        <form action="/create_branch/{{currentDir}}" id="create_form" method="POST">
+        <form action="/create_branch/{{currentDir}}" id="create_form" data-id=0 method="POST">
         <div class="modal-body">
           <div style="font-size:0.5rem;font-style:oblique;opacity: 0.7;">All the white spaces would not be allowed.</div>
           <input type="text" id="create_text" name="create_text" placeholder="Enter branch name" style="width:100%;font-size:150%;" required>
@@ -163,7 +163,7 @@
             <span>&times;</span>
           </button>
         </div>
-        <form action="/rename_branch/{{currentDir}}" id="rename_form" method="POST">
+        <form action="/rename_branch/{{currentDir}}" id="rename_form" data-id=1 method="POST">
           <div class="modal-body">
             <select class="form-select form-select-lg mb-1" id="rename_select" name="rename_select" style="width:100%;font-size:150%;" onchange="$('#rename_text').focus()">
             {% for name in branch_list %}
@@ -208,7 +208,6 @@ const notmerged_text = $('#delete_err')
 
 const rename_modal = $('#rename_modal')
 const rename_form = $('#rename_form')
-const rename_select = $('#rename_select')
 const rename_text = $('#rename_text')
 
 const error_text = $('.error_text') // create(0)와 rename(1)에서 사용
@@ -254,17 +253,30 @@ rename_modal.on('show.bs.modal', function() {
 
 })
 
-function is_duplicate(event){
-  const data = event.data
-  var name = data.input.val().replace(/ /g, '')
-  var errorMsg = data.error
-  var name_list = {{ branch_list|safe }}
+// 커밋 기록이 없는지 확인
+function isNoneCommit() {
+  return !Object.keys({{ branch_commit|safe }}).length
+}
 
-  data.input.val(name)
+function is_duplicate(event){
+  const ev_data = event.data
+  var cur = "{{ currentBranch_name|safe }}"
+  var name = ev_data.input.val().replace(/ /g, '')
+  var errorMsg = ev_data.error
+  var name_list = {{ branch_list|safe }}
+  var form_id = event.target.dataset.id
+ 
+  if (form_id==0 && isNoneCommit()) {
+    errorMsg.html(`<b style='color:red;font-weight:bold;'> Error: Your current branch ${cur} does not have any commits.</b>`)
+    return false;
+  }
+
+  ev_data.input.val(name)
   if (name_list.includes(name)) {
     errorMsg.html(`<b style='color:red;font-weight:bold;'> Error: a branch named ${name} already exists.</b>`)
     return false
   }
+
   return true
 }
 
@@ -331,7 +343,6 @@ function check_deletion(event) {
   var target_value = commit_list[target][0] // 대상 브랜치 커밋값
 
   for (var name in commit_list) {
-    console.log("실행됨")
     if(name == target) {
       continue
     }
