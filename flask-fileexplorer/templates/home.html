@@ -91,7 +91,7 @@
             <span>&times;</span>
           </button>
         </div>
-        <form action="/checkout_branch/{{currentDir}}" id="checkout_form" method="POST">
+        <form action="/checkout_branch/{{currentDir}}" method="POST">
           <div class="modal-body">
             <select class="form-select form-select-lg mb-1" id="checkout_text" name="checkout_text" style="width:100%;font-size:150%;">
             {% for name in branch_list %}
@@ -104,8 +104,10 @@
             </select>
             <div id="tracked_err" class="checkout_err" style="color:red;font-weight:bold"></div>
             <div id="untracked_err" class="checkout_err" style="color:red;font-weight:bold"></div>
+            <div id="notice_msg" class="checkout_err"></div>
           </div>
          <div class="modal-footer">
+          <button type="submit" id="force_btn" class="btn btn-danger mr-auto"; formaction="/checkout_branch/{{currentDir}}/1">CHECKOUT</button>
            <button type="submit" id="checkout_btn" class="btn btn-primary">Confirm</button>
            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
          </div>
@@ -191,11 +193,13 @@ const create_form = $('#create_form')
 const create_text = $('#create_text')
 
 const checkout_modal = $('#checkout_modal')
-const checkout_form = $('#checkout_form')
 const checkout_text = $('#checkout_text')
+const checkout_btn = $('#checkout_btn')
 const tracked_err = $('#tracked_err')
 const untracked_err = $('#untracked_err')
+const notice_msg = $('#notice_msg')
 const checkout_err = $('.checkout_err')
+const force_btn = $('#force_btn')
 
 const delete_modal = $('#delete_modal')
 const delete_btn = $('#delete_btn')
@@ -222,11 +226,13 @@ create_modal.on('shown.bs.modal', function() {
 
 checkout_modal.on('show.bs.modal', function() {
   checkout_err.html('')
+  force_btn.attr("style", "visibility:hidden")
 })
 checkout_text.on('change', function() {
   checkout_err.html('')
+  force_btn.attr("style", "visibility:hidden")
 })
-checkout_form.on('submit', is_overwritten)
+checkout_btn.on('click', is_overwritten)
 
 rename_modal.on('show.bs.modal', function() {
     rename_text.val('')
@@ -290,7 +296,8 @@ function is_overwritten(event) {
   }
 
   if (flag) {
-    // overwritten을 무시하고 작업을 강제하는 기능 제공
+    notice_msg.html(`<div style="color:black;font-weight:bold">* If you want to checkout by force, press <span style="color:red">"CHECKOUT".</span></div>`)
+    force_btn.attr("style", "visibility:visble")
     return false
   }
   return true
