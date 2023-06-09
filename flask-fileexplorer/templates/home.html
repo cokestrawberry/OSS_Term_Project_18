@@ -142,6 +142,40 @@
     </div>
   </div>
 
+  <!-- rename 버튼 클릭 시 나타나는 폼 -->
+  <div class="modal fade" id="rename_modal" tabindex="-1" aria-disabled="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <label for="rename_select" style="display:inline" class="modal-title">
+            <h3>Select a branch to rename</h3>
+          </label>
+          <button type="button" class="close" data-dismiss="modal">
+            <span>&times;</span>
+          </button>
+        </div>
+        <form action="/rename_branch/{{currentDir}}" id="rename_form" method="POST">
+          <div class="modal-body">
+            <select class="form-select form-select-lg mb-1" id="rename_select" name="rename_select" style="width:100%;font-size:150%;">
+            {% for name in branch_list %}
+            {% if name==currentBranch_name %}
+            <option style="font-weight:bold;" selected> {{name}} </option>
+            {% else %}
+            <option> {{name}} </option>
+            {% endif %}
+            {% endfor %}
+            </select>
+            <input type="text" id="rename_text" name="new_name" placeholder="Enter a new branch name" style="width:100%;font-size:150%;" required>
+          </div>
+         <div class="modal-footer">
+           <button type="submit" id="checkout_btn" class="btn btn-primary">Confirm</button>
+           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+         </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
 
 <script>
 const create_modal = $('#create_modal')
@@ -156,6 +190,10 @@ const delete_modal = $('#delete_modal')
 const delete_btn = $('#delete_btn')
 const delete_text = $('#delete_text')
 
+const rename_modal = $('#rename_modal')
+const rename_form = $('#rename_form')
+const rename_select = $('#rename_select')
+const rename_text = $('#rename_text')
 
 
 $(function() {
