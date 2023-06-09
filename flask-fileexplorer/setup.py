@@ -835,11 +835,12 @@ def createBranch(var=""):
 # 커밋되지 않은 변경사항이 있으면 error 발생
 # git checkout -f 옵션 붙이면 변경사항 삭제하고 강제로 이동함.
 @app.route('/checkout_branch/<path:var>', methods=['POST'])
+@app.route('/checkout_branch/<path:var>/<int:force>', methods=['POST'])
 def checkoutBranch(var="", force=0):
     repo = git.Repo(var)
     branch = request.form['checkout_text']
-
-    if repo.is_dirty():
+    
+    if force:
         repo.git.checkout(branch, force=True)
     elif isNoneCommit():
         repo.git.checkout(b=branch)
