@@ -102,6 +102,7 @@
             {% endif %}
             {% endfor %}
             </select>
+            <div id="tracked_err" class="checkout_err" style="color:red;font-weight:bold"></div>
           </div>
          <div class="modal-footer">
            <button type="submit" id="checkout_btn" class="btn btn-primary">Confirm</button>
@@ -191,6 +192,7 @@ const create_text = $('#create_text')
 const checkout_modal = $('#checkout_modal')
 const checkout_form = $('#checkout_form')
 const checkout_text = $('#checkout_text')
+const tracked_err = $('#tracked_err')
 
 const delete_modal = $('#delete_modal')
 const delete_btn = $('#delete_btn')
@@ -215,6 +217,14 @@ create_modal.on('shown.bs.modal', function() {
   })
   create_form.on('submit', {input : create_text, error : error_text.eq(0)}, is_duplicate)
 
+checkout_modal.on('show.bs.modal', function() {
+  tracked_err.html('')
+})
+checkout_text.on('change', function() {
+  tracked_err.html('')
+})
+checkout_form.on('submit', is_overwritten)
+
 rename_modal.on('show.bs.modal', function() {
     rename_text.val('')
     error_text.html('')
@@ -237,7 +247,33 @@ function is_duplicate(event){
   return true
 }
 
+// 현재 브랜치에서 커밋되지 않은 modified or staged 파일 중
+// checkout 대상 브랜치의 tracked 파일에 해당하지 않는 것은
+// 모두 checkout 시 삭제 대상이 됨.
+// 확인 메시지를 띄워 동의하면 checkout -f 수행.
+// untracked 파일은 해당 브랜치에서 삭제된 상태일 수 있으므로
+// 현재 브랜치의 changed 파일이 대상 브랜치의 untracked 파일에 해당하는지를
+// 확인하는 것만으로는 불충분함.
 
+function is_overwritten(event) {
+  
+  var branch = checkout_text.val()
+  var target = {{ tracked_list|safe }}[branch] // 대상 브랜치의 tracked 파일명 Array
+  var src_changed = {{ changed_list|safe }} // 현재 브랜치의 modified, staged 파일명 Array
+  var tracked = []
+  var untracked = []
+
+ for (const changed_file of src_changed) {
+    tracked.push(changed_file)
+  }
+
+  if(tracked.length > 0) {
+    tracked_err.html(`<div style="font-size:75%"> Error: Your local changes to the following files would be overwritten by checkout:<br>` + tracked.join(' ') + `<br>Please commit your changes before you switch branches.</div>`)
+    return false
+  }
+
+  return true
+}
 
 
 
