@@ -776,6 +776,23 @@ def createBranch(var=""):
         repo.create_head(new_branch)        
     return redirect('/files/' + var)
 
+# Checkout Branch
+# 커밋되지 않은 변경사항이 있으면 error 발생
+# git checkout -f 옵션 붙이면 변경사항 삭제하고 강제로 이동함.
+@app.route('/checkout_branch/<path:var>', methods=['POST'])
+def checkoutBranch(var="", force=0):
+    repo = git.Repo(var)
+    branch = request.form['checkout_text']
+    
+    if repo.is_dirty():
+        repo.git.checkout(branch, force=True)
+    elif isNoneCommit():
+        repo.git.checkout(b=branch)
+    else:
+        repo.git.checkout(branch)
+    return redirect('/files/' + var)
+
+
 # ====================================
 if __name__ == '__main__':
     local = "127.0.0.1"
