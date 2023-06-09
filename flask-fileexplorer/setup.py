@@ -351,6 +351,9 @@ def filePage(var=""):
         parsed_status = gitStatus_parsing()
         branch_list = getBranchNameList()
         repo = git.Repo(var)
+        changed_list = getChangedList()
+        tracked_list = getTrackedList()
+
         try:
             cur_branch = repo.active_branch.name
         except:
@@ -358,7 +361,7 @@ def filePage(var=""):
                 cur_branch = 'DETACHED_HEAD'
             else:
                 cur_branch = ''
-        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, currentBranch_name = cur_branch, branch_list=branch_list)
+        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, currentBranch_name = cur_branch, branch_list=branch_list, changed_list=changed_list, tracked_list=tracked_list)
     
     return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=None)
     # ====================================
@@ -757,6 +760,33 @@ def getBranchNameList():
     if isNoneCommit():
         branch_name.append(repo.active_branch.name)
     return branch_name
+
+# Get ChangedList
+# 현재 브랜치의 modified와 staged 파일명을 합쳐 하나의 리스트로 반환
+def getChangedList():
+    global repo_str
+    status = gitStatus_parsing()
+    str_list = status['modified'] + status['staged']
+    changed_list = []
+    for str in str_list:
+        changed_element = str.split(':')[1].strip()
+        changed_list.append(changed_element)
+    return changed_list
+
+# Get TrackedList
+# 해당 저장소 내 모든 브랜치에 대한 tracked 파일명을
+# {브랜치1,2, .. : 파일1,2, ..}의 dict로 반환
+def getTrackedList():
+    global repo_str 
+    repo = git.Repo(repo_str)
+    trackedDict = {}
+    heads = repo.heads
+    for branch in heads:
+        name = branch.name
+        trackedDict.setdefault(name, [])
+        tree = branch.commit.tree.traverse()
+        trackedDict[name] = list([blob.name for blob in tree])
+    return trackedDict
 
 # Create Branch
 # 사용자가 submit한 branch_name의 값을 branch_list에 저장
