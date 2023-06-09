@@ -850,10 +850,15 @@ def checkoutBranch(var="", force=0):
 
 # Delete Branch
 @app.route('/delete_branch/<path:var>', methods=['POST'])
-def deleteBranch(var=""):
+@app.route('/delete_branch/<path:var>/<int:force>', methods=['POST'])
+def deleteBranch(var="", force=0):
     repo = git.Repo(var)
     branch = request.form['delete_text']
-    repo.delete_head(branch)
+    
+    if force:
+        repo.delete_head(branch, force=1)
+    else:
+        repo.delete_head(branch)
     return redirect('/files/' + var)
 
 # 이름 중복 - front 에서 처리
