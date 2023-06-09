@@ -75,10 +75,52 @@
      </div>
     </div>
 
+    <!-- checkout 버튼 클릭 시 나타나는 폼 -->
+  <div class="modal fade" id="checkout_modal" tabindex="-1" aria-disabled="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <label for="checkout_text" style="display:inline" class="modal-title">
+            <h3>Select a branch to checkout</h3>
+          </label>
+          <button type="button" class="close" data-dismiss="modal">
+            <span>&times;</span>
+          </button>
+        </div>
+        <form action="/checkout_branch/{{currentDir}}" id="checkout_form" method="POST">
+          <div class="modal-body">
+            <select class="form-select form-select-lg mb-1" id="checkout_text" name="checkout_text" style="width:100%;font-size:150%;">
+            {% for name in branch_list %}
+            {% if name==currentBranch_name %}
+            <option style="color:red;font-weight:bold;" disabled> {{name}} </option>
+            {% else %}
+            <option> {{name}} </option>
+            {% endif %}
+            {% endfor %}
+            </select>
+          </div>
+         <div class="modal-footer">
+           <button type="submit" id="checkout_btn" class="btn btn-primary">Confirm</button>
+           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+         </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
 <script>
 const create_modal = $('#create_modal')
 const create_form = $('#create_form')
 const create_text = $('#create_text')
+
+const checkout_modal = $('#checkout_modal')
+const checkout_form = $('#checkout_form')
+const checkout_text = $('#checkout_text')
+
+
+
+
 
 $(function() {
 create_modal.on('show.bs.modal', function() {
