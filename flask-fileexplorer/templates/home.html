@@ -17,6 +17,8 @@
 
 <style>
     .branch {margin-bottom:6px; margin-top:3px;}
+    /* 부트스트랩 모달폼 오류제거 */
+    .modal-open {padding-right:0px !important;}
 </style>
 
 <aside style="position:fixed;right:5vw;width:10vw;height:100vh;">
@@ -24,9 +26,9 @@
  <hr style="width:100%;color:black;";>
  <ul>
 
-    <!-- 모달 폼 버튼
+    <!-- Branch Menu::
         Create/Checkout/Delete/Rename
-        ** 클릭하면 body:padding-right 값 변하여 버튼이 밀리는 문제있음 -->
+        각각 버튼-모달폼 형식 -->
         <li>
             <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#create_modal">
              Create
