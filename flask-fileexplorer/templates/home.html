@@ -12,7 +12,7 @@
 <!--=============================
     Feature 1 : Branch Management 
     =============================-->
-    
+
 {% if isgit==True %}
 
 <style>
@@ -23,34 +23,77 @@
  <div class="branch menu tab" style="font-size:large;font-weight:bold;"> Branch Menu</div>
  <hr style="width:100%;color:black;";>
  <ul>
+
     <!-- 모달 폼 버튼
         Create/Checkout/Delete/Rename
         ** 클릭하면 body:padding-right 값 변하여 버튼이 밀리는 문제있음 -->
-  <li>
-   <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#create_branch">
-    Create
-   </button>
-  </li>
-  <li>
-   <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#checkout_branch">
-    Checkout
-   </button>
-  </li>
-  <li>
-   <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#delete_branch">
-    Delete
-   </button>
-  </li>
-  <li>
-   <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#rename_branch">
-    Rename
-   </button>
-  </li>
- </ul>
-</aside>
+        <li>
+            <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#create_modal">
+             Create
+            </button>
+           </li>
+           <li>
+            <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#checkout_modal">
+             Checkout
+            </button>
+           </li>
+           <li>
+            <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#delete_modal">
+             Delete
+            </button>
+           </li>
+           <li>
+            <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#rename_modal">
+             Rename
+            </button>
+           </li>
+          </ul>
+         </aside>
 
+ <!-- create 버튼 클릭 시 나타나는 폼 -->
+ <div class="modal fade" id="create_modal" tabindex="-1" aria-disabled="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <label for="create_text" style="display:inline" class="modal-title">
+            <h3>Create a new branch</h3>
+          </label>
+          <button type="button" class="close" data-dismiss="modal">
+            <span>&times;</span>
+          </button>
+        </div>
+        <form action="/create_branch/{{currentDir}}" id="create_form" method="POST">
+        <div class="modal-body">
+            <input type="text" id="create_text" name="create_text" placeholder="Enter branch name" style="width:100%;font-size:150%;" required>
+          </div>
+        <div class="modal-footer">
+           <button type="submit" class="btn btn-primary">Confirm</button>
+           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+       </form>
+      </div>
+     </div>
+    </div>
+
+<script>
+const create_modal = $('#create_modal')
+const create_form = $('#create_form')
+const create_text = $('#create_text')
+
+$(function() {
+create_modal.on('show.bs.modal', function() {
+  create_text.val('')
+})
+
+
+
+})
+
+
+
+</script>
 {% endif %}
-
+<!-- ============================================ -->
 
 <aside class="sidebar_git" style="position:fixed;width:17%;height:100vh;">
     <nav class="nav">
