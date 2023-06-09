@@ -103,6 +103,7 @@
             {% endfor %}
             </select>
             <div id="tracked_err" class="checkout_err" style="color:red;font-weight:bold"></div>
+            <div id="untracked_err" class="checkout_err" style="color:red;font-weight:bold"></div>
           </div>
          <div class="modal-footer">
            <button type="submit" id="checkout_btn" class="btn btn-primary">Confirm</button>
@@ -193,6 +194,8 @@ const checkout_modal = $('#checkout_modal')
 const checkout_form = $('#checkout_form')
 const checkout_text = $('#checkout_text')
 const tracked_err = $('#tracked_err')
+const untracked_err = $('#untracked_err')
+const checkout_err = $('.checkout_err')
 
 const delete_modal = $('#delete_modal')
 const delete_btn = $('#delete_btn')
@@ -218,10 +221,10 @@ create_modal.on('shown.bs.modal', function() {
   create_form.on('submit', {input : create_text, error : error_text.eq(0)}, is_duplicate)
 
 checkout_modal.on('show.bs.modal', function() {
-  tracked_err.html('')
+  checkout_err.html('')
 })
 checkout_text.on('change', function() {
-  tracked_err.html('')
+  checkout_err.html('')
 })
 checkout_form.on('submit', is_overwritten)
 
@@ -260,18 +263,33 @@ function is_overwritten(event) {
   var branch = checkout_text.val()
   var target = {{ tracked_list|safe }}[branch] // 대상 브랜치의 tracked 파일명 Array
   var src_changed = {{ changed_list|safe }} // 현재 브랜치의 modified, staged 파일명 Array
+  var src_untracked = {{ untracked_list|safe }}
   var tracked = []
   var untracked = []
+  var flag = false
 
  for (const changed_file of src_changed) {
     tracked.push(changed_file)
   }
+  for (const untracked_file of src_untracked) {
+    if (target.includes(untracked_file)) {
+    untracked.push(untracked_file)
+      }
+  }
 
   if(tracked.length > 0) {
     tracked_err.html(`<div style="font-size:75%"> Error: Your local changes to the following files would be overwritten by checkout:<br>` + tracked.join(' ') + `<br>Please commit your changes before you switch branches.</div>`)
-    return false
+    flag = true
+  }
+  if(untracked.length > 0) {
+    untracked_err.html(`<div style="font-size:75%"> Error: The following untracked working tree files would be overwritten by checkout:<br>` + untracked.join(' ') + `<br>Please move or remove them before you switch branches.</div>`)
+    flag = true
   }
 
+  if (flag) {
+    // overwritten을 무시하고 작업을 강제하는 기능 제공
+    return false
+  }
   return true
 }
 
