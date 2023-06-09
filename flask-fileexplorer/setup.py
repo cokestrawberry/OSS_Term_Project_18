@@ -758,6 +758,23 @@ def getBranchNameList():
         branch_name.append(repo.active_branch.name)
     return branch_name
 
+# Create Branch
+# 사용자가 submit한 branch_name의 값을 branch_list에 저장
+# repo.heads==[]이면 원칙적으로 다른 branch 생성 불가.
+# git checkout -b 옵션 추가 시 .git/HEAD의 값 변경.
+# 이후 add-commit 하면 master의 이름이 변경되는 효과를 가짐.
+# 이후 git branch master로 다시 master 생성하면 동일 커밋을 가리킴.
+@app.route('/create_branch/<path:var>', methods=['POST'])
+def createBranch(var=""):
+    repo = git.Repo(var)
+    branch_name_list = getBranchNameList()
+    new_branch = request.form['create_text']
+
+    if isNoneCommit():
+        repo.git.checkout(b=new_branch)
+    elif new_branch not in branch_name_list:
+        repo.create_head(new_branch)        
+    return redirect('/files/' + var)
 
 # ====================================
 if __name__ == '__main__':
