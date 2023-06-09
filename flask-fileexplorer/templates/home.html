@@ -156,7 +156,7 @@
         </div>
         <form action="/rename_branch/{{currentDir}}" id="rename_form" method="POST">
           <div class="modal-body">
-            <select class="form-select form-select-lg mb-1" id="rename_select" name="rename_select" style="width:100%;font-size:150%;">
+            <select class="form-select form-select-lg mb-1" id="rename_select" name="rename_select" style="width:100%;font-size:150%;" onchange="$('#rename_text').focus()">
             {% for name in branch_list %}
             {% if name==currentBranch_name %}
             <option style="font-weight:bold;" selected> {{name}} </option>
@@ -200,8 +200,14 @@ $(function() {
 create_modal.on('show.bs.modal', function() {
   create_text.val('')
 })
+// show.bs.modal에 넣으면 모달 로딩이 focus보다 느려 실행되지 않음 
+create_modal.on('shown.bs.modal', function() {
+    create_text.focus()
+  })
 
-
+rename_modal.on('show.bs.modal', function() {
+    rename_text.val('')
+  })
 
 })
 
