@@ -107,7 +107,7 @@
             <div id="notice_msg" class="checkout_err"></div>
           </div>
          <div class="modal-footer">
-          <button type="submit" id="force_btn" class="btn btn-danger mr-auto"; formaction="/checkout_branch/{{currentDir}}/1">CHECKOUT</button>
+          <button type="submit" class="btn btn-danger force_btn mr-auto"; formaction="/checkout_branch/{{currentDir}}/1">CHECKOUT</button>
            <button type="submit" id="checkout_btn" class="btn btn-primary">Confirm</button>
            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
          </div>
@@ -142,6 +142,7 @@
             <div id="delete_err" style="color:red;font-weight:bold"></div>
           </div>
          <div class="modal-footer">
+          <button type="submit" class="btn btn-danger force_btn mr-auto" formaction="/delete_branch/{{currentDir}}/1">DELETE</button>
            <button type="submit" id="delete_btn" class="btn btn-primary">Confirm</button>
            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
          </div>
@@ -199,11 +200,11 @@ const tracked_err = $('#tracked_err')
 const untracked_err = $('#untracked_err')
 const notice_msg = $('#notice_msg')
 const checkout_err = $('.checkout_err')
-const force_btn = $('#force_btn')
 
 const delete_modal = $('#delete_modal')
 const delete_btn = $('#delete_btn')
 const delete_text = $('#delete_text')
+const notmerged_text = $('#delete_err')
 
 const rename_modal = $('#rename_modal')
 const rename_form = $('#rename_form')
@@ -211,7 +212,7 @@ const rename_select = $('#rename_select')
 const rename_text = $('#rename_text')
 
 const error_text = $('.error_text') // create(0)와 rename(1)에서 사용
-
+const force_btn = $('.force_btn') // checkout(0)과 delete(1)에서 사용
 
 $(function() {
 create_modal.on('show.bs.modal', function() {
@@ -226,13 +227,23 @@ create_modal.on('shown.bs.modal', function() {
 
 checkout_modal.on('show.bs.modal', function() {
   checkout_err.html('')
-  force_btn.attr("style", "visibility:hidden")
+  force_btn.eq(0).attr("style", "visibility:hidden")
 })
 checkout_text.on('change', function() {
   checkout_err.html('')
-  force_btn.attr("style", "visibility:hidden")
+  force_btn.eq(0).attr("style", "visibility:hidden")
 })
 checkout_btn.on('click', is_overwritten)
+
+delete_modal.on('show.bs.modal', function() {
+    notmerged_text.html('')
+    force_btn.eq(1).attr("style", "visibility:hidden")
+  })
+delete_text.on('change', function() {
+    notmerged_text.html('')
+    force_btn.eq(1).attr("style", "visibility:hidden")
+  })
+delete_btn.on('click', check_deletion)
 
 rename_modal.on('show.bs.modal', function() {
     rename_text.val('')
@@ -240,6 +251,7 @@ rename_modal.on('show.bs.modal', function() {
   })
   rename_form.on('submit', {input : rename_text, error : error_text.eq(1)}, is_duplicate)
   
+
 })
 
 function is_duplicate(event){
@@ -297,7 +309,7 @@ function is_overwritten(event) {
 
   if (flag) {
     notice_msg.html(`<div style="color:black;font-weight:bold">* If you want to checkout by force, press <span style="color:red">"CHECKOUT".</span></div>`)
-    force_btn.attr("style", "visibility:visble")
+    force_btn.eq(0).attr("style", "visibility:visble")
     return false
   }
   return true
@@ -310,7 +322,33 @@ function is_same_commit(branch) {
   return commit_list[cur][0] == commit_list[branch][0]
 }
 
+// 사용자가 선택한 브랜치가 자손 혹은 동위 브랜치를 갖는지 확인하여 존재하면 삭제 수행
+// is not fully merged 에러 처리
+// git bash는 현재 브랜치 대상, 본 메서드는 전체 브랜치 대상(내부적으로는 git branch -D 수행)
+function check_deletion(event) {
+  var target = delete_text.val()
+  var commit_list = {{ branch_commit|safe }} // {브랜치 : [커밋해시값들]}
+  var target_value = commit_list[target][0] // 대상 브랜치 커밋값
 
+  for (var name in commit_list) {
+    console.log("실행됨")
+    if(name == target) {
+      continue
+    }
+    for (var commit of commit_list[name]) {
+      if(commit == target_value) {
+        delete_btn.attr("formaction", "/delete_branch/{{currentDir}}/1")
+        return true;
+      }
+    }
+  }
+// Error : is not fully merged
+notmerged_text.html(`Error : The branch ${target} is not fully merged.<div style="color:black">* If you are sure you want to delete it, press <span style="font-weight:bold;color:red">"DELETE."</span></div>`)
+force_btn.eq(1).attr("style", "visibility:visble")
+
+return false
+
+}
 
 </script>
 {% endif %}
