@@ -354,6 +354,7 @@ def filePage(var=""):
         changed_list = getChangedList()
         tracked_list = getTrackedList()
         untracked_list = getUntrackedList()
+        branch_commit = getBranchCommits()
 
         try:
             cur_branch = repo.active_branch.name
@@ -362,7 +363,7 @@ def filePage(var=""):
                 cur_branch = 'DETACHED_HEAD'
             else:
                 cur_branch = ''
-        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, currentBranch_name = cur_branch, branch_list=branch_list, changed_list=changed_list, tracked_list=tracked_list, untracked_list=untracked_list)
+        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, currentBranch_name = cur_branch, branch_list=branch_list, changed_list=changed_list, tracked_list=tracked_list, untracked_list=untracked_list, branch_commit=branch_commit)
     
     return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=None)
     # ====================================
@@ -795,6 +796,22 @@ def getTrackedList():
         tree = branch.commit.tree.traverse()
         trackedDict[name] = list([blob.name for blob in tree])
     return trackedDict
+
+# 브랜치 삭제 가능 여부를 판단하기 위해
+# 현재 디렉토리 전체 브랜치의 커밋 로그를 dict로 반환
+# home에서 사용자 입력에 대하여 삭제 여부 확인
+def getBranchCommits():
+    global repo_str 
+    repo = git.Repo(repo_str)
+    commitDict = {}
+    heads = repo.heads
+    for branch in heads:
+        name = branch.name
+        commitDict.setdefault(name, [])
+        commits = repo.iter_commits(branch)
+        commitDict[name] = list([commit.hexsha for commit in commits])
+                
+    return commitDict
 
 # Create Branch
 # 사용자가 submit한 branch_name의 값을 branch_list에 저장
