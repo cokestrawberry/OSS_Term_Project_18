@@ -66,8 +66,10 @@
         </div>
         <form action="/create_branch/{{currentDir}}" id="create_form" method="POST">
         <div class="modal-body">
-            <input type="text" id="create_text" name="create_text" placeholder="Enter branch name" style="width:100%;font-size:150%;" required>
-          </div>
+          <div style="font-size:0.5rem;font-style:oblique;opacity: 0.7;">All the white spaces would not be allowed.</div>
+          <input type="text" id="create_text" name="create_text" placeholder="Enter branch name" style="width:100%;font-size:150%;" required>
+          <div class="error_text"></div>
+        </div>
         <div class="modal-footer">
            <button type="submit" class="btn btn-primary">Confirm</button>
            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -167,7 +169,9 @@
             {% endif %}
             {% endfor %}
             </select>
+            <div style="font-size:0.5rem;font-style:oblique;opacity: 0.7;">All the white spaces would not be allowed.</div>
             <input type="text" id="rename_text" name="new_name" placeholder="Enter a new branch name" style="width:100%;font-size:150%;" required>
+            <div class="error_text"></div>
           </div>
          <div class="modal-footer">
            <button type="submit" id="checkout_btn" class="btn btn-primary">Confirm</button>
@@ -197,21 +201,44 @@ const rename_form = $('#rename_form')
 const rename_select = $('#rename_select')
 const rename_text = $('#rename_text')
 
+const error_text = $('.error_text') // create(0)와 rename(1)에서 사용
+
 
 $(function() {
 create_modal.on('show.bs.modal', function() {
   create_text.val('')
+  error_text.html('')
 })
 // show.bs.modal에 넣으면 모달 로딩이 focus보다 느려 실행되지 않음 
 create_modal.on('shown.bs.modal', function() {
     create_text.focus()
   })
+  create_form.on('submit', {input : create_text, error : error_text.eq(0)}, is_duplicate)
 
 rename_modal.on('show.bs.modal', function() {
     rename_text.val('')
+    error_text.html('')
   })
-
+  rename_form.on('submit', {input : rename_text, error : error_text.eq(1)}, is_duplicate)
+  
 })
+
+function is_duplicate(event){
+  const data = event.data
+  var name = data.input.val().replace(/ /g, '')
+  var errorMsg = data.error
+  var name_list = {{ branch_list|safe }}
+
+  data.input.val(name)
+  if (name_list.includes(name)) {
+    errorMsg.html(`<b style='color:red;font-weight:bold;'> Error: a branch named ${name} already exists.</b>`)
+    return false
+  }
+  return true
+}
+
+
+
 
 
 
