@@ -108,6 +108,40 @@
     </div>
   </div>
 
+  <!-- delete 버튼 클릭 시 나타나는 폼 -->
+  <div class="modal fade" id="delete_modal" tabindex="-1" aria-disabled="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <label for="delete_text" style="display:inline" class="modal-title">
+            <h3>Select a branch to delete</h3>
+          </label>
+          <button type="button" class="close" data-dismiss="modal">
+            <span>&times;</span>
+          </button>
+        </div>
+        <form action="/delete_branch/{{currentDir}}" method="POST">
+          <div class="modal-body">
+            <select class="form-select form-select-lg mb-1" id="delete_text" name="delete_text" style="width:100%;font-size:150%;">
+            {% for name in branch_list %}
+            {% if name==currentBranch_name %}
+            <option style="color:red;font-weight:bold;" disabled> {{name}} </option>
+            {% else %}
+            <option> {{name}} </option>
+            {% endif %}
+            {% endfor %}
+            </select>
+            <div id="delete_err" style="color:red;font-weight:bold"></div>
+          </div>
+         <div class="modal-footer">
+           <button type="submit" id="delete_btn" class="btn btn-primary">Confirm</button>
+           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+         </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
 
 <script>
 const create_modal = $('#create_modal')
@@ -118,7 +152,9 @@ const checkout_modal = $('#checkout_modal')
 const checkout_form = $('#checkout_form')
 const checkout_text = $('#checkout_text')
 
-
+const delete_modal = $('#delete_modal')
+const delete_btn = $('#delete_btn')
+const delete_text = $('#delete_text')
 
 
 
