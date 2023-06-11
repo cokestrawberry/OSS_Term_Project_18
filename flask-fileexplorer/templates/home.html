@@ -1,6 +1,16 @@
 {% extends 'layout.html' %}
 {% block content %}
 
+<!-- merge failed popup -->
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <script>
+      alert("{{messages[-1]}}")
+    </script>
+  {% endif %}
+{% endwith %}
+<!-- merge failed popup done -->
+
 <script>
     function commit_msgbox(){
         document.getElementById('git_commit_show_msgbox').style.display = 'none';
@@ -64,7 +74,7 @@
                 </li>
             {% endif %}
 
-            {% if isgit==True %}
+              {% if isgit==True %}
                 {% if parsed_status["staged"]|length >0 %}
             <li>
                 <form id="git_menu_commit" class="git" action="/git_commit/{{currentDir}}" method="POST" style="display:none;">
@@ -73,10 +83,12 @@
                 </form>
                 <button id="git_commit_show_msgbox" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="commit_msgbox()">Git Commit</button>
             </li>
-                {% endif %}
             <hr style="width:100%;color:black;";>
+                {% endif %}
+            
 
             {% if parsed_status["staged"]|length >0 %}
+            <br>
             <label style="font-size:medium;font-weight:bold;">staged</label>
             {% endif %}
             {% for item in parsed_status["staged"] %}
@@ -92,6 +104,7 @@
             {% endfor %}
 
             {% if parsed_status["modified"]|length >0 %}
+            <br>
             <label style="font-size:medium;font-weight:bold;">modified</label>
             {% endif %}
             {% for item in parsed_status["modified"] %}
@@ -107,6 +120,7 @@
             {% endfor %}
 
             {% if parsed_status["untracked"]|length >0 %}
+            <br>
             <label style="font-size:medium;font-weight:bold;">untracked</label>
             {% endif %}
             {% for item in parsed_status["untracked"] %}
@@ -124,7 +138,7 @@
             <!--
                 차후에 git status / git log를 표시하기 위한 공간
             -->
-                          <!--=============================
+              <!--=============================
               Feature 1 : Branch Management 
               =============================-->
 
@@ -144,33 +158,43 @@
                       Create/Checkout/Delete/Rename
                       각각 버튼-모달폼 형식 -->
                       <li>
-                          <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#create_modal">
-                          Create
-                          </button>
-                        </li>
-                        <li>
-                          <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#checkout_modal">
-                          Checkout
-                          </button>
-                        </li>
-                        <li>
-                          <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#delete_modal">
-                          Delete
-                          </button>
-                        </li>
-                        <li>
-                          <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#rename_modal">
-                          Rename
-                          </button>
-                        </li>
-                        </ul>
-              
-                        {% endif %}              
-            {% endif %}            
+                        <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#create_modal">
+                        Create
+                        </button>
+                      </li>
+                      <li>
+                        <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#checkout_modal">
+                        Checkout
+                        </button>
+                      </li>
+                      <li>
+                        <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#delete_modal">
+                        Delete
+                        </button>
+                      </li>
+                      <li>
+                        <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#rename_modal">
+                        Rename
+                        </button>
+                      </li>
+                      
+                      <!-- branch merge -->
+                      {% if branch_list|length >=2 %}
+                      <hr style="width:100%;color:black;";>
+                      <li>
+                        <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#merge_modal">
+                        Merge
+                        </button>
+                      </li>
+                      {% endif %}
+                      <!-- branch merge done -->
+                    </ul>
+            {% endif %}              
             <!--
                 Done
                 ============================================================
             -->
+            {% endif %}  
         </ul>
     </nav>
 </aside>
@@ -489,6 +513,48 @@
   </div>
 </div>
 
+<!-- branch merge -->
+<!-- merge 버튼 클릭 시 나타나는 폼 -->
+<div class="modal fade" id="merge_modal" tabindex="-1" aria-disabled="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <label for="merge_text" style="display:inline" class="modal-title">
+          <h3>Select a branch to merge</h3>
+        </label>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <form action="/merge_branch/{{currentDir}}" method="POST">
+        <div class="modal-body">
+          {% for name in branch_list %}
+          {% if name==currentBranch_name %}
+          <div>Current Branch: </div>
+          <div style="font-weight:bold;font-size:150%;">{{name}}</div>
+          {% endif %}
+          {% endfor %}
+
+          <div>new feature: </div>
+          <select class="form-select form-select-lg mb-1" id="merge_text" name="merge_text" style="width:100%;font-size:150%;">
+          {% for name in branch_list %}
+          {% if name!=currentBranch_name %}
+          <option> {{name}} </option>
+          {% endif %}
+          {% endfor %}
+          </select>
+          <div id="merge_conflict" class="merge_err" style="color:red;font-weight:bold"></div>
+          <div id="merge_notice_msg" class="merge_err"></div>
+        </div>
+      <div class="modal-footer">
+        <button type="submit" id="merge_btn" class="btn btn-primary">Confirm</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- branch merge done -->
 
 <script>
 const create_modal = $('#create_modal')
@@ -511,6 +577,14 @@ const notmerged_text = $('#delete_err')
 const rename_modal = $('#rename_modal')
 const rename_form = $('#rename_form')
 const rename_text = $('#rename_text')
+
+// branch merge ==========================
+const merge_modal = $('#merge_modal')
+const merge_text = $('#merge_text')
+const merge_btn = $('#merge_btn')
+const merge_conflict = $('#merge_conflict')
+const merge_notice_msg = $('#merge_notice_msg')
+// branch merge done =====================
 
 const error_text = $('.error_text') // create(0)와 rename(1)에서 사용
 const force_btn = $('.force_btn') // checkout(0)과 delete(1)에서 사용
@@ -552,7 +626,15 @@ rename_modal.on('show.bs.modal', function() {
 })
 rename_form.on('submit', {input : rename_text, error : error_text.eq(1)}, is_duplicate)
 
-
+// branch merge ==========================
+merge_modal.on('show.bs.modal', function() {
+merge_conflict.html('')
+})
+merge_text.on('change', function() {
+checkout_err.html('')
+})
+merge_btn.on('click', true)
+// branch merge done =====================
 })
 
 // 커밋 기록이 없는지 확인
