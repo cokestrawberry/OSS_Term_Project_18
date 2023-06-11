@@ -13,7 +13,13 @@ Repository for Chungang UNIV. Dept. of SW OSS term project team 18
 We started our project based on &lt;WIFIle&gt;
 [Github address](https://github.com/reallyrehan/flask-fileexplorer)
 
-This is how to use our &lt;file manager with git command(working title)&gt;
+This project is based on MIT License
+
+* Why we selected this license?:
+  &mdash; First, following base file explorer program's license, we selected MIT License.
+  &mdash; Furthermore, we found that there is lots of groups to try implementation of git to existing file system. To contribute other developer group, even it's small amount, we selected MIT License.
+
+This is how to use our &lt;FMOS(File manager with Open Source)&gt;
 
 --------------
 
@@ -41,7 +47,7 @@ This is how to use our &lt;file manager with git command(working title)&gt;
 
  * Then, you can see your C: directory. You can browse by click folder or add local address of your directory behind the address.
 
-4. Set Downloads/Documents folder
+4. Set Downloads/Documents folder (Optional, Not neccessaty)
 
     You will have to configure the config.json file with your paths
     ```
@@ -136,7 +142,8 @@ With name of command on buttons, you can intuitively know how to use.
 
     => MIT
 
-    :
+    : First, following base file explorer program's license, we selected MIT License.
+    Furthermore, we found that there is lots of groups to try implementation of git to existing file system. To contribute other developer group, even it's small amount, we selected MIT License.
 
   - Expression method when one file has multiple states
 

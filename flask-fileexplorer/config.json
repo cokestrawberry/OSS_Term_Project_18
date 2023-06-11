@@ -1,8 +1,8 @@
 {
-    "Hidden":       [],
-    "Favorites":    ["Users/rehanahmed/Downloads","Users/rehanahmed/Documents"],
-    "Password":     "",
-    "rootDir":   ""
-
-    
+	"Hidden":	[],
+	"Favorites":	["Users/rehanahmed/Downloads","Users/rehanahmed/Documents"],
+	"Password":	"",
+	"rootDir":	"",
+	"user_id":	"",
+	"user_token":	""
 }
