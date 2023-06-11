@@ -16,6 +16,11 @@ This is how to use our &lt;FMOS(File manager with Open Source)&gt;
 
 ## How to start
 
+0. Python version
+    ```
+    python version >= 3.8
+    ```
+
 1. Clone this project
     ```shell
     git clone https://github.com/cokestrawberry/OSS_Term_Project_18.git

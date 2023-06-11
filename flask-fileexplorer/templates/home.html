@@ -6,6 +6,19 @@
         document.getElementById('git_commit_show_msgbox').style.display = 'none';
         document.getElementById('git_menu_commit').style.display = 'block';
     }
+    function clone_msgbox(){
+        document.getElementById('git_clone_show_msgbox').style.display = 'none';
+        document.getElementById('git_clone_menu').style.display = 'block';
+        clone_radiobtn_pub();
+    }
+    function clone_radiobtn_pub(){
+        document.getElementById('user_id').style.display = 'none';
+        document.getElementById('user_token').style.display = 'none';
+    }
+    function clone_radiobtn_prv(){
+        document.getElementById('user_id').style.display = 'block';
+        document.getElementById('user_token').style.display = 'block';
+    }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@gitgraph/js"></script>
 
@@ -31,6 +44,23 @@
                     <form id="git_menu_init" class="git" action="/git_init/{{currentDir}}" method="POST">
                         <button id="git_init" class="git" style="margin-bottom:6px; margin-top:3px;">Git Init</button>
                     </form>
+                </li>
+                <!--
+                git clone button
+                -->
+                <li>
+                    <form id="git_clone_menu" class="git" action="/git_clone/{{currentDir}}" method="POST" style="display:none;">
+                        <input type="radio" id="public" name="repo_state" value="public" onclick="clone_radiobtn_pub()" checked>
+                        <label for="public">public</label>
+                        <input type="radio" id="private" name="repo_state" value="private" onclick="clone_radiobtn_prv()">
+                        <label for="private">private</label><br>
+
+                        <input id="repo_addr" class="git" name="repo_addr" type="text" style="width:100%;" placeholder="please input repo. address">
+                        <input id="user_id" class="git" name="user_id" type="text" style="width:100%;" placeholder="please input your git id" style="display:none;">
+                        <input id="user_token" class="git" name="user_token" type="text" style="width:100%;" placeholder="please input your git access token" style="display:none;">
+                        <button id="git_clone" class="git" style="margin-bottom:6px;margin-top:3px;">Git Clone</button>
+                    </form>
+                    <button id="git_clone_show_msgbox" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="clone_msgbox()">Git Clone</button>
                 </li>
             {% endif %}
 
@@ -94,6 +124,48 @@
             <!--
                 차후에 git status / git log를 표시하기 위한 공간
             -->
+                          <!--=============================
+              Feature 1 : Branch Management 
+              =============================-->
+
+              {% if isgit==True %}
+
+              <style>
+                  .branch {margin-bottom:6px; margin-top:3px;}
+                  /* 부트스트랩 모달폼 오류제거 */
+                  .modal-open {padding-right:0px !important;}
+              </style>
+              
+              <div class="branch menu tab" style="font-size:large;font-weight:bold;"> Branch Menu</div>
+              <hr style="width:100%;color:black;";>
+              <ul>
+              
+                  <!-- Branch Menu::
+                      Create/Checkout/Delete/Rename
+                      각각 버튼-모달폼 형식 -->
+                      <li>
+                          <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#create_modal">
+                          Create
+                          </button>
+                        </li>
+                        <li>
+                          <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#checkout_modal">
+                          Checkout
+                          </button>
+                        </li>
+                        <li>
+                          <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#delete_modal">
+                          Delete
+                          </button>
+                        </li>
+                        <li>
+                          <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#rename_modal">
+                          Rename
+                          </button>
+                        </li>
+                        </ul>
+              
+                        {% endif %}              
             {% endif %}            
             <!--
                 Done
@@ -102,6 +174,7 @@
         </ul>
     </nav>
 </aside>
+
 
 <section class="main" style="float:right;width:100%;";>
 <div id ="view0_container" class = "container"  {{ default_view_css_1 }} >
@@ -281,188 +354,501 @@
 
 </section>
 
+<!-- create 버튼 클릭 시 나타나는 폼 -->
+<div class="modal fade" id="create_modal" tabindex="-1" aria-disabled="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <label for="create_text" style="display:inline" class="modal-title">
+          <h3>Create a new branch</h3>
+        </label>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <form action="/create_branch/{{currentDir}}" id="create_form" data-id=0 method="POST">
+      <div class="modal-body">
+        <div style="font-size:0.5rem;font-style:oblique;opacity: 0.7;">All the white spaces would not be allowed.</div>
+        <input type="text" id="create_text" name="create_text" placeholder="Enter branch name" style="width:100%;font-size:150%;" required>
+        <div class="error_text"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Confirm</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </form>
+    </div>
+  </div>
+  </div>
+
+  <!-- checkout 버튼 클릭 시 나타나는 폼 -->
+<div class="modal fade" id="checkout_modal" tabindex="-1" aria-disabled="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <label for="checkout_text" style="display:inline" class="modal-title">
+          <h3>Select a branch to checkout</h3>
+        </label>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <form action="/checkout_branch/{{currentDir}}" method="POST">
+        <div class="modal-body">
+          <select class="form-select form-select-lg mb-1" id="checkout_text" name="checkout_text" style="width:100%;font-size:150%;">
+          {% for name in branch_list %}
+          {% if name==currentBranch_name %}
+          <option style="color:red;font-weight:bold;" disabled> {{name}} </option>
+          {% else %}
+          <option> {{name}} </option>
+          {% endif %}
+          {% endfor %}
+          </select>
+          <div id="tracked_err" class="checkout_err" style="color:red;font-weight:bold"></div>
+          <div id="untracked_err" class="checkout_err" style="color:red;font-weight:bold"></div>
+          <div id="notice_msg" class="checkout_err"></div>
+        </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-danger force_btn mr-auto"; formaction="/checkout_branch/{{currentDir}}/1">CHECKOUT</button>
+        <button type="submit" id="checkout_btn" class="btn btn-primary">Confirm</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- delete 버튼 클릭 시 나타나는 폼 -->
+<div class="modal fade" id="delete_modal" tabindex="-1" aria-disabled="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <label for="delete_text" style="display:inline" class="modal-title">
+          <h3>Select a branch to delete</h3>
+        </label>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <form action="/delete_branch/{{currentDir}}" method="POST">
+        <div class="modal-body">
+          <select class="form-select form-select-lg mb-1" id="delete_text" name="delete_text" style="width:100%;font-size:150%;">
+          {% for name in branch_list %}
+          {% if name==currentBranch_name %}
+          <option style="color:red;font-weight:bold;" disabled> {{name}} </option>
+          {% else %}
+          <option> {{name}} </option>
+          {% endif %}
+          {% endfor %}
+          </select>
+          <div id="delete_err" style="color:red;font-weight:bold"></div>
+        </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-danger force_btn mr-auto" formaction="/delete_branch/{{currentDir}}/1">DELETE</button>
+        <button type="submit" id="delete_btn" class="btn btn-primary">Confirm</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- rename 버튼 클릭 시 나타나는 폼 -->
+<div class="modal fade" id="rename_modal" tabindex="-1" aria-disabled="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <label for="rename_select" style="display:inline" class="modal-title">
+          <h3>Select a branch to rename</h3>
+        </label>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <form action="/rename_branch/{{currentDir}}" id="rename_form" data-id=1 method="POST">
+        <div class="modal-body">
+          <select class="form-select form-select-lg mb-1" id="rename_select" name="rename_select" style="width:100%;font-size:150%;" onchange="$('#rename_text').focus()">
+          {% for name in branch_list %}
+          {% if name==currentBranch_name %}
+          <option style="font-weight:bold;" selected> {{name}} </option>
+          {% else %}
+          <option> {{name}} </option>
+          {% endif %}
+          {% endfor %}
+          </select>
+          <div style="font-size:0.5rem;font-style:oblique;opacity: 0.7;">All the white spaces would not be allowed.</div>
+          <input type="text" id="rename_text" name="new_name" placeholder="Enter a new branch name" style="width:100%;font-size:150%;" required>
+          <div class="error_text"></div>
+        </div>
+      <div class="modal-footer">
+        <button type="submit" id="checkout_btn" class="btn btn-primary">Confirm</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
 <script>
-    console.log('where');
-    const commitHistory = {{commit_history|tojson}};
-    const branchHeads = {{branch_heads|tojson}};
-    const branchRevList = {{branch_rev_list|tojson}};
-    const headBranch = "{{head_branch|lower}}";
-    let branchLog = new Map();
+const create_modal = $('#create_modal')
+const create_form = $('#create_form')
+const create_text = $('#create_text')
 
-    console.log(commitHistory.toReversed());
-    console.log(headBranch);
+const checkout_modal = $('#checkout_modal')
+const checkout_text = $('#checkout_text')
+const checkout_btn = $('#checkout_btn')
+const tracked_err = $('#tracked_err')
+const untracked_err = $('#untracked_err')
+const notice_msg = $('#notice_msg')
+const checkout_err = $('.checkout_err')
 
-    // console.log(Object.entries(commitHistory)[0][1]);
-    // console.log(typeof(Object.entries(commitHistory)[0][1].time));
+const delete_modal = $('#delete_modal')
+const delete_btn = $('#delete_btn')
+const delete_text = $('#delete_text')
+const notmerged_text = $('#delete_err')
 
-    const options = {
-        template: GitgraphJS.templateExtend("metro", {
-            colors: ["#264653", "#e76f51", "#e9c46a", "#f4a261"],
-            branch: {
-                lineWidth: 4,
-                spacing: 20,
-            },
-            commit: {
-                dot: {
-                    size: 8,
-                },
-                spacing: 40,
-            }
-        })
-    };
+const rename_modal = $('#rename_modal')
+const rename_form = $('#rename_form')
+const rename_text = $('#rename_text')
 
-    const graphContainer = document.getElementById("historyWrap");
-    const gitGraph = GitgraphJS.createGitgraph(graphContainer, options);
+const error_text = $('.error_text') // create(0)와 rename(1)에서 사용
+const force_btn = $('.force_btn') // checkout(0)과 delete(1)에서 사용
 
-    const branchList = {};
-    branchList[headBranch] = gitGraph.branch(headBranch);
+$(function() {
+create_modal.on('show.bs.modal', function() {
+create_text.val('')
+error_text.html('')
+})
+// show.bs.modal에 넣으면 모달 로딩이 focus보다 느려 실행되지 않음 
+create_modal.on('shown.bs.modal', function() {
+  create_text.focus()
+})
+create_form.on('submit', {input : create_text, error : error_text.eq(0)}, is_duplicate)
 
-    commitHistory.toReversed().forEach(({commitHexa : hexa, commitInfo : info}) => {
-        // console.log(hexa);
-        if (info.parents.length === 0) {
-            branchList[headBranch].commit({
-                subject: info.message,
-                hash: hexa,
-                author: info.author,
-            })
-        }
-        if (info.parents.length === 2) {
-            let [parent1, parent2] = info.parents;
-            console.log(hexa)
-            console.log(parent1, parent2);
+checkout_modal.on('show.bs.modal', function() {
+checkout_err.html('')
+force_btn.eq(0).attr("style", "visibility:hidden")
+})
+checkout_text.on('change', function() {
+checkout_err.html('')
+force_btn.eq(0).attr("style", "visibility:hidden")
+})
+checkout_btn.on('click', is_overwritten)
 
-            const parentBranch1 = commitHistory.find(obj => obj.commitHexa === parent1).commitInfo.branches;
-            const parentBranch2 = commitHistory.find(obj => obj.commitHexa === parent2).commitInfo.branches;
+delete_modal.on('show.bs.modal', function() {
+  notmerged_text.html('')
+  force_btn.eq(1).attr("style", "visibility:hidden")
+})
+delete_text.on('change', function() {
+  notmerged_text.html('')
+  force_btn.eq(1).attr("style", "visibility:hidden")
+})
+delete_btn.on('click', check_deletion)
 
-            console.log(parentBranch1);
-            console.log(parentBranch2);
-
-            const branchShare1 = parentBranch1.filter(v => info.branches.includes(v) && Object.keys(branchList).includes(v));
-            const branchShare2 = parentBranch2.filter(v => info.branches.includes(v) && Object.keys(branchList).includes(v));
-
-            console.log(branchShare1);
-            console.log(branchShare2);
-            if (branchShare1.length) {
-                try {
-                branchList[branchShare1[0]].merge({
-                    branch: parentBranch2[0], 
-                    commitOptions: {
-                        subject: info.message,
-                        hash: hexa,
-                        author: '',
-                    }
-                })} catch (e) {
-                    console.error(e)
-                }
-            } else {
-                try {
-                    branchList[branchShare2[0]].merge({
-                        branch: parentBranch1[0], 
-                        commitOptions: {
-                            subject: info.message,
-                            hash: hexa,
-                            author: '',
-                        }
-                    })
-                } catch (e) {
-                    console.error(e)
-                }
-
-            }
-            // const branchExist = branchShare.filter(v => Object.keys(branchList).includes(v));
-
-        }
-
-        if (info.parents.length === 1) {
-            let parent = info.parents[0];
-            const parentCommit = commitHistory.find(obj => obj.commitHexa === parent);
-            // console.log(parent);
-            // console.log(parentCommit);
-            const branchShare = parentCommit.commitInfo.branches.filter(v => info.branches.includes(v));
-            const branchExist = branchShare.filter(v => Object.keys(branchList).includes(v));
-            if (branchExist.length) {
-                branchList[branchExist[0]].commit({
-                    subject: info.message,
-                    hash: hexa,
-                    author: info.author,
-                })
-            } else {
-                // console.log(branchShare);
-                // console.log(hexa);
-                branchList[branchShare[0]] = gitGraph.branch({
-                    name: branchShare[0],
-                    from: parent,
-                })
-                branchList[branchShare[0]].commit({
-                    subject: info.message,
-                    hash: hexa,
-                    author: info.author,
-                })
-            }
-            // console.log(branchShare);
-            // console.log(branchExist);
-        }
-
-    })
+rename_modal.on('show.bs.modal', function() {
+  rename_text.val('')
+  error_text.html('')
+})
+rename_form.on('submit', {input : rename_text, error : error_text.eq(1)}, is_duplicate)
 
 
-    // Simulate git commands with gitGraph API.
+})
 
-    // for (let branchName of Object.keys(branchHeads)) {
-    //     branchList[branchName] = gitGraph.branch(elementId = branchName);
-    // }
+// 커밋 기록이 없는지 확인
+function isNoneCommit() {
+return !Object.keys({{ branch_commit|safe }}).length
+}
 
-    // console.log(branchList);
+function is_duplicate(event){
+const ev_data = event.data
+var cur = "{{ currentBranch_name|safe }}"
+var name = ev_data.input.val().replace(/ /g, '')
+var errorMsg = ev_data.error
+var name_list = {{ branch_list|safe }}
+var form_id = event.target.dataset.id
+
+if (form_id==0 && isNoneCommit()) {
+  errorMsg.html(`<b style='color:red;font-weight:bold;'> Error: Your current branch ${cur} does not have any commits.</b>`)
+  return false;
+}
+
+ev_data.input.val(name)
+if (name_list.includes(name)) {
+  errorMsg.html(`<b style='color:red;font-weight:bold;'> Error: a branch named ${name} already exists.</b>`)
+  return false
+}
+
+return true
+}
+
+// 현재 브랜치에서 커밋되지 않은 modified or staged 파일 중
+// checkout 대상 브랜치의 tracked 파일에 해당하지 않는 것은
+// 모두 checkout 시 삭제 대상이 됨.
+// 확인 메시지를 띄워 동의하면 checkout -f 수행.
+// untracked 파일은 해당 브랜치에서 삭제된 상태일 수 있으므로
+// 현재 브랜치의 changed 파일이 대상 브랜치의 untracked 파일에 해당하는지를
+// 확인하는 것만으로는 불충분함.
+// 동위 브랜치는 항상 checkout true
+function is_overwritten(event) {
+var branch = checkout_text.val()
+var target = {{ tracked_list|safe }}[branch] // 대상 브랜치의 tracked 파일명 Array
+var src_changed = {{ changed_list|safe }} // 현재 브랜치의 modified, staged 파일명 Array
+var src_untracked = {{ untracked_list|safe }}
+var tracked = []
+var untracked = []
+var flag = false
+
+if (is_same_commit(branch)) {
+  return true
+}
+
+for (const changed_file of src_changed) {
+  tracked.push(changed_file)
+}
+for (const untracked_file of src_untracked) {
+  if (target.includes(untracked_file)) {
+  untracked.push(untracked_file)
+    }
+}
+
+if(tracked.length > 0) {
+  tracked_err.html(`<div style="font-size:75%"> Error: Your local changes to the following files would be overwritten by checkout:<br>` + tracked.join(' ') + `<br>Please commit your changes before you switch branches.</div>`)
+  flag = true
+}
+if(untracked.length > 0) {
+  untracked_err.html(`<div style="font-size:75%"> Error: The following untracked working tree files would be overwritten by checkout:<br>` + untracked.join(' ') + `<br>Please move or remove them before you switch branches.</div>`)
+  flag = true
+}
+
+if (flag) {
+  notice_msg.html(`<div style="color:black;font-weight:bold">* If you want to checkout by force, press <span style="color:red">"CHECKOUT".</span></div>`)
+  force_btn.eq(0).attr("style", "visibility:visble")
+  return false
+}
+return true
+}
+
+// 두 브랜치가 같은 커밋을 가리키는지 확인
+function is_same_commit(branch) {
+var cur = "{{ currentBranch_name|safe }}"
+var commit_list = {{ branch_commit|safe }}
+return commit_list[cur][0] == commit_list[branch][0]
+}
+
+// 사용자가 선택한 브랜치가 자손 혹은 동위 브랜치를 갖는지 확인하여 존재하면 삭제 수행
+// is not fully merged 에러 처리
+// git bash는 현재 브랜치 대상, 본 메서드는 전체 브랜치 대상(내부적으로는 git branch -D 수행)
+function check_deletion(event) {
+var target = delete_text.val()
+var commit_list = {{ branch_commit|safe }} // {브랜치 : [커밋해시값들]}
+var target_value = commit_list[target][0] // 대상 브랜치 커밋값
+
+for (var name in commit_list) {
+  if(name == target) {
+    continue
+  }
+  for (var commit of commit_list[name]) {
+    if(commit == target_value) {
+      delete_btn.attr("formaction", "/delete_branch/{{currentDir}}/1")
+      return true;
+    }
+  }
+}
+// Error : is not fully merged
+notmerged_text.html(`Error : The branch ${target} is not fully merged.<div style="color:black">* If you are sure you want to delete it, press <span style="font-weight:bold;color:red">"DELETE."</span></div>`)
+force_btn.eq(1).attr("style", "visibility:visble")
+
+return false
+
+}
+
+</script>
+
+<!-- git history -->
+<script>
+  console.log('where');
+  const commitHistory = {{commit_history|tojson}};
+  const branchHeads = {{branch_heads|tojson}};
+  const branchRevList = {{branch_rev_list|tojson}};
+  const headBranch = "{{head_branch|lower}}";
+  let branchLog = new Map();
+
+  console.log(commitHistory.toReversed());
+  console.log(headBranch);
+
+  // console.log(Object.entries(commitHistory)[0][1]);
+  // console.log(typeof(Object.entries(commitHistory)[0][1].time));
+
+  const options = {
+      template: GitgraphJS.templateExtend("metro", {
+          colors: ["#264653", "#e76f51", "#e9c46a", "#f4a261"],
+          branch: {
+              lineWidth: 4,
+              spacing: 20,
+          },
+          commit: {
+              dot: {
+                  size: 8,
+              },
+              spacing: 40,
+          }
+      })
+  };
+
+  const graphContainer = document.getElementById("historyWrap");
+  const gitGraph = GitgraphJS.createGitgraph(graphContainer, options);
+
+  const branchList = {};
+  branchList[headBranch] = gitGraph.branch(headBranch);
+
+  commitHistory.toReversed().forEach(({commitHexa : hexa, commitInfo : info}) => {
+      // console.log(hexa);
+      if (info.parents.length === 0) {
+          branchList[headBranch].commit({
+              subject: info.message,
+              hash: hexa,
+              author: info.author,
+          })
+      }
+      if (info.parents.length === 2) {
+          let [parent1, parent2] = info.parents;
+          console.log(hexa)
+          console.log(parent1, parent2);
+
+          const parentBranch1 = commitHistory.find(obj => obj.commitHexa === parent1).commitInfo.branches;
+          const parentBranch2 = commitHistory.find(obj => obj.commitHexa === parent2).commitInfo.branches;
+
+          console.log(parentBranch1);
+          console.log(parentBranch2);
+
+          const branchShare1 = parentBranch1.filter(v => info.branches.includes(v) && Object.keys(branchList).includes(v));
+          const branchShare2 = parentBranch2.filter(v => info.branches.includes(v) && Object.keys(branchList).includes(v));
+
+          console.log(branchShare1);
+          console.log(branchShare2);
+          if (branchShare1.length) {
+              try {
+              branchList[branchShare1[0]].merge({
+                  branch: parentBranch2[0], 
+                  commitOptions: {
+                      subject: info.message,
+                      hash: hexa,
+                      author: '',
+                  }
+              })} catch (e) {
+                  console.error(e)
+              }
+          } else {
+              try {
+                  branchList[branchShare2[0]].merge({
+                      branch: parentBranch1[0], 
+                      commitOptions: {
+                          subject: info.message,
+                          hash: hexa,
+                          author: '',
+                      }
+                  })
+              } catch (e) {
+                  console.error(e)
+              }
+
+          }
+          // const branchExist = branchShare.filter(v => Object.keys(branchList).includes(v));
+
+      }
+
+      if (info.parents.length === 1) {
+          let parent = info.parents[0];
+          const parentCommit = commitHistory.find(obj => obj.commitHexa === parent);
+          // console.log(parent);
+          // console.log(parentCommit);
+          const branchShare = parentCommit.commitInfo.branches.filter(v => info.branches.includes(v));
+          const branchExist = branchShare.filter(v => Object.keys(branchList).includes(v));
+          if (branchExist.length) {
+              branchList[branchExist[0]].commit({
+                  subject: info.message,
+                  hash: hexa,
+                  author: info.author,
+              })
+          } else {
+              // console.log(branchShare);
+              // console.log(hexa);
+              branchList[branchShare[0]] = gitGraph.branch({
+                  name: branchShare[0],
+                  from: parent,
+              })
+              branchList[branchShare[0]].commit({
+                  subject: info.message,
+                  hash: hexa,
+                  author: info.author,
+              })
+          }
+          // console.log(branchShare);
+          // console.log(branchExist);
+      }
+
+  })
 
 
-    // console.log(branchLog);
+  // Simulate git commands with gitGraph API.
+
+  // for (let branchName of Object.keys(branchHeads)) {
+  //     branchList[branchName] = gitGraph.branch(elementId = branchName);
+  // }
+
+  // console.log(branchList);
+
+
+  // console.log(branchLog);
 
 
 
-    // for ( let [branchName, branchInfo] of branchLog) {
-    //     console.log(branchName);
+  // for ( let [branchName, branchInfo] of branchLog) {
+  //     console.log(branchName);
 
-    //     branchList[branchInfo.branches[0]].commit({
-    //         subject: branchInfo.message,
-    //         hash: branchName,
-    //         author: branchInfo.author,
-    //         parents: branchInfo.parents,
-    //     })
-    // }
-
-    
+  //     branchList[branchInfo.branches[0]].commit({
+  //         subject: branchInfo.message,
+  //         hash: branchName,
+  //         author: branchInfo.author,
+  //         parents: branchInfo.parents,
+  //     })
+  // }
 
 
 
-    // master.commit({
-        // subject: "Initial commit",
-        // hash: "17fb5029ebbc01cc75ad3b6ef777d2d5db84226a",
-        // author: "hello"
-    // });
 
-    // console.log(master.commit);
 
-    // const develop = master.branch("develop");
-    // develop.commit("Add TypeScript");
+  // master.commit({
+      // subject: "Initial commit",
+      // hash: "17fb5029ebbc01cc75ad3b6ef777d2d5db84226a",
+      // author: "hello"
+  // });
 
-    // const aFeature = develop.branch("a-feature");
-    // aFeature
-    //   .commit("Make it work")
-    //   .commit("Make it right")
-    //   .commit("Make it fast");
+  // console.log(master.commit);
 
-    // develop.merge(aFeature);
-    // develop.commit("Prepare v1");
+  // const develop = master.branch("develop");
+  // develop.commit("Add TypeScript");
 
-    // master.merge(develop).tag("v1.0.0");
+  // const aFeature = develop.branch("a-feature");
+  // aFeature
+  //   .commit("Make it work")
+  //   .commit("Make it right")
+  //   .commit("Make it fast");
+
+  // develop.merge(aFeature);
+  // develop.commit("Prepare v1");
+
+  // master.merge(develop).tag("v1.0.0");
 
 </script>
 
 <style>
-    #historyWrap svg text{
-        font: normal 7pt Arial !important;
-        /* transform: translateX(30px); */
-    }
+  #historyWrap svg text{
+      font: normal 7pt Arial !important;
+      /* transform: translateX(30px); */
+  }
 </style>
+<!-- git history done -->
 
 {% endblock content %}
