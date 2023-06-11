@@ -29,14 +29,27 @@
         document.getElementById('user_id').style.display = 'block';
         document.getElementById('user_token').style.display = 'block';
     }
+
+  // =====================================================
+  // history alert function
+  function history_alert(branch_name, author, commit_hash){
+    let msg = "";
+    msg += "Branch info.: " + branch_name + "\n";
+    msg += "Author: " + author + "\n";
+    msg += "Hash: " + commit_hash + "\n";
+
+    alert(msg);
+  }
+  // =====================================================
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@gitgraph/js"></script>
 
-
+{% if isgit==True %}
 <aside class="sidebar_git" style="position:fixed;width:20vw;height:50vh;right:0;display: flex;overflow-y:scroll;">
     <div id="historyWrap" style="width:100%;min-height:10vh; background-color: #ffff99;">
     </div>
 </aside>
+{% endif %}
 
 <aside class="sidebar_git" style="position:fixed;width:17%;height:100vh;">
     <nav class="nav">
@@ -869,7 +882,6 @@ return false
           // console.log(branchShare);
           // console.log(branchExist);
       }
-
   })
 
 
@@ -931,6 +943,19 @@ return false
       /* transform: translateX(30px); */
   }
 </style>
+
+<script>
+  window.onload = function() {
+    // =====================================================
+    // history alert function
+    commitHistory.toReversed().forEach(({commitHexa : hexa, commitInfo : info}) => {
+      let temp_circle = document.getElementById(hexa)
+      temp_circle.setAttribute("onclick", `history_alert("${info.message}", "${info.author}", "${hexa}")`)
+      console.log(temp_circle)
+    })
+    // =====================================================
+  }
+</script>
 <!-- git history done -->
 
 {% endblock content %}
