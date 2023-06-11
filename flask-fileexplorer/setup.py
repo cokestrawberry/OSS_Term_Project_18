@@ -17,6 +17,8 @@ import filetype
 # OSS Code
 import git
 repo_str = ""
+
+from flask import flash
 # ====================================
 
 from urllib.parse import unquote
@@ -728,19 +730,22 @@ def gitLog_parsing():
     # branch = repo.branches["branch1"]
     # commit = branch.commit
     # print(commit)
-    for commit_obj in repo.iter_commits(head_branch):
-        commit_info = {
-            "commitHexa": commit_obj.hexsha,
-            "commitInfo": {
-                "message": commit_obj.message.strip(),
-                "author": str(commit_obj.author),
-                "branches": [],
-                "parents": [p.hexsha for p in commit_obj.parents],
-                "time": commit_obj.committed_datetime
+    try:
+        for commit_obj in repo.iter_commits(head_branch):
+            commit_info = {
+                "commitHexa": commit_obj.hexsha,
+                "commitInfo": {
+                    "message": commit_obj.message.strip(),
+                    "author": str(commit_obj.author),
+                    "branches": [],
+                    "parents": [p.hexsha for p in commit_obj.parents],
+                    "time": commit_obj.committed_datetime
+                }
             }
-        }
 
-        commit_history.append(commit_info)
+            commit_history.append(commit_info)
+    except:
+        return None, None, None, None
 
 
         # Traverse the commit history starting from the branch head
@@ -1024,6 +1029,40 @@ def renameBranch(var=""):
     else:
         repo.heads[branch].rename(name)
 
+    return redirect('/files/' + var)
+
+# mergeBranch
+# git merge
+@app.route('/merge_branch/<path:var>', methods=['POST'])
+def mergeBranch(var=""):
+    repo = git.Repo(var)
+
+    try:
+        cur_branch = repo.active_branch.name
+    except:
+        if(repo.head.is_detached):
+            cur_branch = 'DETACHED_HEAD'
+        else:
+            cur_branch = ''
+            
+    new_feature = request.form['merge_text']
+
+    cmd = 'git merge ' + new_feature
+    
+    print("="*20)
+    msg = os.popen("cd " + var + " & " + cmd)
+    msg = str(msg.read())
+    # merge conflict
+    if msg.find('CONFLICT (content):')!=-1:
+        for l in msg.split("\n"):
+            if l.find('CONFLICT (content):')!=-1:
+                msg = l[l.find('CONFLICT (content):')+19:]
+
+        flash(msg)
+    print(msg)
+    print("="*20)
+
+    print(cmd + " done")
     return redirect('/files/' + var)
 
 # ====================================
