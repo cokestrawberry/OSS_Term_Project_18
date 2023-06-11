@@ -757,11 +757,11 @@ def gitLog_parsing():
             branch_name = branch_name[len('refs/heads/'):]  # Remove the 'refs/heads/' prefix for local branches
         elif branch_name.startswith('refs/remotes/'):
             branch_name = branch_name[len('refs/remotes/'):]  # Remove the 'refs/remotes/' prefix for remote branches
-        print(branch_name)
+        #print(branch_name)
 
     # for branch in reversed(list(repo.branches)):
         # branch_name = branch.name
-        print(branch_name)
+        #print(branch_name)
         branch_rev_list = repo.git.rev_list("--first-parent", branch_name).split('\n')
 
         for commit_hash in branch_rev_list:
