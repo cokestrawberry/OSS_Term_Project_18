@@ -6,12 +6,18 @@
         document.getElementById('git_commit_show_msgbox').style.display = 'none';
         document.getElementById('git_menu_commit').style.display = 'block';
     }
-</script>
-
-<script>
-    function branch_msgbox() {
-        document.getElementById('git_merge_show_msgbox').style.display = 'none';
-        document.getElementById('git_menu_merge').style.display = 'block';
+    function clone_msgbox(){
+        document.getElementById('git_clone_show_msgbox').style.display = 'none';
+        document.getElementById('git_clone_menu').style.display = 'block';
+        clone_radiobtn_pub();
+    }
+    function clone_radiobtn_pub(){
+        document.getElementById('user_id').style.display = 'none';
+        document.getElementById('user_token').style.display = 'none';
+    }
+    function clone_radiobtn_prv(){
+        document.getElementById('user_id').style.display = 'block';
+        document.getElementById('user_token').style.display = 'block';
     }
 </script>
 
@@ -24,19 +30,35 @@
                 - git init
                 - git commit
                 - parsed git status
-                - merge
             -->
             <label style="font-size:large;font-weight:bold;">Git Menu</label>
             {% if isgit==false %}
-                <li>
-                    <form id="git_menu_init" class="git" action="/git_init/{{currentDir}}" method="POST">
-                        <button id="git_init" class="git" style="margin-bottom:6px; margin-top:3px;">Git Init</button>
-                    </form>
-                </li>
+            <li>
+                <form id="git_menu_init" class="git" action="/git_init/{{currentDir}}" method="POST">
+                    <button id="git_init" class="git" style="margin-bottom:6px; margin-top:3px;">Git Init</button>
+                </form>
+            </li>
+            <!--
+            git clone button
+            -->
+            <li>
+                <form id="git_clone_menu" class="git" action="/git_clone/{{currentDir}}" method="POST" style="display:none;">
+                    <input type="radio" id="public" name="repo_state" value="public" onclick="clone_radiobtn_pub()" checked>
+                    <label for="public">public</label>
+                    <input type="radio" id="private" name="repo_state" value="private" onclick="clone_radiobtn_prv()">
+                    <label for="private">private</label><br>
+
+                    <input id="repo_addr" class="git" name="repo_addr" type="text" style="width:100%;" placeholder="please input repo. address">
+                    <input id="user_id" class="git" name="user_id" type="text" style="width:100%;" placeholder="please input your git id" style="display:none;">
+                    <input id="user_token" class="git" name="user_token" type="text" style="width:100%;" placeholder="please input your git access token" style="display:none;">
+                    <button id="git_clone" class="git" style="margin-bottom:6px;margin-top:3px;">Git Clone</button>
+                </form>
+                <button id="git_clone_show_msgbox" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="clone_msgbox()">Git Clone</button>
+            </li>
             {% endif %}
 
             {% if isgit==True %}
-                {% if parsed_status["staged"]|length >0 %}
+            {% if parsed_status["staged"]|length >0 %}
             <li>
                 <form id="git_menu_commit" class="git" action="/git_commit/{{currentDir}}" method="POST" style="display:none;">
                     <button id="git_commit" class="git" style="margin-bottom:6px;margin-top:3px;">Git Commit</button>
@@ -44,27 +66,8 @@
                 </form>
                 <button id="git_commit_show_msgbox" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="commit_msgbox()">Git Commit</button>
             </li>
-                {% endif %}
-
-            <!--
-                branching
-            -->
-            {% if isgit==True%}
-            <li>
-                <form id="git_menu_merge" class="git" action="/git_merge/{{currentDir}}" method="POST" style="display:none;">
-                    <button id="git_merge" class="git" style="margin-bottom:6px;margin-top:3px;">Merge</button>
-                    <input id="branch_name_to_merge" class="git" name="branch_name_to_merge" type="text" style="width:100%;" placeholder="please input branch name">
-                </form>
-                <button id="git_merge_show_msgbox" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="branch_msgbox()">Merge</button>
-            </li>
-                
-            
             {% endif %}
-            <!--
-                branching
-            -->
-                
-            <hr style="width:100%;color:black;";>
+            <hr style="width:100%;color:black;" ;>
 
             {% if parsed_status["staged"]|length >0 %}
             <label style="font-size:medium;font-weight:bold;">staged</label>
@@ -110,197 +113,602 @@
                 </ul>
             </div>
             {% endfor %}
-            <hr style="width:100%;color:black;";>
+            <hr style="width:100%;color:black;" ;>
             <!--
                 차후에 git status / git log를 표시하기 위한 공간
             -->
-            {% endif %}            
+            <!--=============================
+            Feature 1 : Branch Management
+            =============================-->
+            {% if isgit==True %}
+
+            <style>
+                .branch {
+                    margin-bottom: 6px;
+                    margin-top: 3px;
+                }
+                /* 부트스트랩 모달폼 오류제거 */
+                .modal-open {
+                    padding-right: 0px !important;
+                }
+            </style>
+
+            <div class="branch menu tab" style="font-size:large;font-weight:bold;"> Branch Menu</div>
+            <hr style="width:100%;color:black;" ;>
+            <ul>
+
+                <!-- Branch Menu::
+        Create/Checkout/Delete/Rename/Merge
+        각각 버튼-모달폼 형식 -->
+                <li>
+                    <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#create_modal">
+                        Create
+                    </button>
+                </li>
+                <li>
+                    <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#checkout_modal">
+                        Checkout
+                    </button>
+                </li>
+                <li>
+                    <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#delete_modal">
+                        Delete
+                    </button>
+                </li>
+                <li>
+                    <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#rename_modal">
+                        Rename
+                    </button>
+                </li>
+                <li>
+                    <button type="button" class="branch" data-toggle="modal" data-backdrop="static" data-target="#merge_modal">
+                        Merge
+                    </button>
+                </li>
+            </ul>
+
+            {% endif %}
+            {% endif %}
             <!--
                 Done
                 ============================================================
             -->
-
         </ul>
     </nav>
 </aside>
 
-<section class="main" style="float:right;width:100%;";>
-<div id ="view0_container" class = "container"  {{ default_view_css_1 }} >
-    <div class = "row"><h5></h5></div>
+
+<section class="main" style="float:right;width:100%;" ;>
+    <div id="view0_container" class="container" {{ default_view_css_1 }}>
+        <div class="row"><h5></h5></div>
 
 
-<div class = "row">
+        <div class="row">
 
-{% for k,dir_i in dir_dict.items() %}
+            {% for k,dir_i in dir_dict.items() %}
 
-<div class="col-md-2 col-sm-4 col-6 mt-2">
-    <div class="thumbnail hvr-shadow">
-        <a href="/files/{{dir_i.currentDir}}/{{dir_i.f_url}}">
-            <img src = '/static/{{dir_i.image}}' class='img-thumbnail' style="border:0px;"/>
-            <p style="color:black; text-align:center; text-decoration:none;">
-                <p style="color:black;" data-toggle="tooltip" data-placement="right" title="{{dir_i.f_complete}}">
-                {{ dir_i.f }}
-                </p>
-            </p>
-        </a>                
-
-        
-    </div>
-    </div>
-
-{% endfor %}
-
-</div>
+            <div class="col-md-2 col-sm-4 col-6 mt-2">
+                <div class="thumbnail hvr-shadow">
+                    <a href="/files/{{dir_i.currentDir}}/{{dir_i.f_url}}">
+                        <img src='/static/{{dir_i.image}}' class='img-thumbnail' style="border:0px;" />
+                        <p style="color:black; text-align:center; text-decoration:none;">
+                        <p style="color:black;" data-toggle="tooltip" data-placement="right" title="{{dir_i.f_complete}}">
+                            {{ dir_i.f }}
+                        </p>
+                        </p>
+                    </a>
 
 
+                </div>
+            </div>
 
-<div class = "row mt-4"><h5></h5></div> <hr>
+            {% endfor %}
 
-<div class = "row">
+        </div>
 
-    {% for k,dir_i in file_dict.items() %}
-    
-    <div class="col-md-2 col-sm-4 col-6 mt-2">
-    
-        <div class="thumbnail hvr-shadow">
-            
-            <a href="/download/{{dir_i.currentDir}}/{{dir_i.f_url}}">
-                <img src = '/static/{{dir_i.image}}' class='img-thumbnail' style="border:0px;object-fit:fill;width:150px;height:150px;"/>
-                <p style="color:black; text-align:center; text-decoration:none;">
-                    <p style="color:black;" data-toggle="tooltip" data-placement="right" title="{{dir_i.f_complete}}">
-                        {{ dir_i.f }}
-                    </p>
-                </p>
-            </a>
 
-            <!--
-                ============================================================
-                OSS code
-                - git add
-                - git restore
-                - git rm --cached (untracking)
-                - git rm (deleting)
-                - git mv (renaming)
-            -->
 
-            {% if dir_i.state in ["untracked", "modified"] %}
-                <form id="git_menu_add" class="git" action="/git_add/{{currentDir}}/{{dir_i.f_complete}}" method="POST" >
-                    <button id="git_add" class="git" style="margin-bottom:6px; margin-top:3px;">Git Add</button>
-                </form>
-            {% endif %}
+        <div class="row mt-4"><h5></h5></div> <hr>
 
-			{% if dir_i.state in ["modified", "staged"] %}
-            <form id="git_menu_restore" class="git" action="/git_restore/{{currentDir}}/{{dir_i.f_complete}}/{{dir_i.state}}" method="POST">
-                <button id="git_restore" class="git" style="margin-bottom:6px;margin-top:3px;">Git Restore</button>
-            </form>
-            {% endif %}
+        <div class="row">
 
-            {% if dir_i.state == "committed" %}
-            <form id="git_menu_untracking" class="git" action="/git_rm_u/{{currentDir}}/{{dir_i.f_complete}}/{{dir_i.state}}" method="POST">
-                <button id="git_untracking" class="git" style="margin-bottom:6px;margin-top:3px;">Untracking</button>
-            </form>
+            {% for k,dir_i in file_dict.items() %}
 
-            <form id="git_menu_deleting" class="git" action="/git_rm_d/{{currentDir}}/{{dir_i.f_complete}}/{{dir_i.state}}" method="POST">
-                <button id="git_deleting" class="git" style="margin-bottom:6px;margin-top:3px;">Deleting</button>
-            </form>
+            <div class="col-md-2 col-sm-4 col-6 mt-2">
 
-            <form id="git_menu_renaming{{dir_i.f_complete}}" class="git" action="/git_mv/{{currentDir}}/{{dir_i.f_complete}}" method="POST" style="display:none;">
-                <input id="mv_name" class="git" name="mv_name" type="text" placeholder="rename" style="width:150px;">
-                <button id="git_mv" class="git">Renaming</button>
-            </form>
-            <button id="btn_git_renaming{{dir_i.f_complete}}" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="mv_box(this)">Renaming</button>
-            {% endif %}
-            
-            <!--
-                Done
-                ============================================================
-            -->
+                <div class="thumbnail hvr-shadow">
 
-            <!--
-                ============================================================
-                OSS CODE
-                - git mv msg box
-            -->
-            <script>
+                    <a href="/download/{{dir_i.currentDir}}/{{dir_i.f_url}}">
+                        <img src='/static/{{dir_i.image}}' class='img-thumbnail' style="border:0px;object-fit:fill;width:150px;height:150px;" />
+                        <p style="color:black; text-align:center; text-decoration:none;">
+                        <p style="color:black;" data-toggle="tooltip" data-placement="right" title="{{dir_i.f_complete}}">
+                            {{ dir_i.f }}
+                        </p>
+                        </p>
+                    </a>
+
+                    <!--
+                        ============================================================
+                        OSS code
+                        - git add
+                        - git restore
+                        - git rm --cached (untracking)
+                        - git rm (deleting)
+                        - git mv (renaming)
+                    -->
+                    {% if dir_i.state in ["untracked", "modified"] %}
+                    <form id="git_menu_add" class="git" action="/git_add/{{currentDir}}/{{dir_i.f_complete}}" method="POST">
+                        <button id="git_add" class="git" style="margin-bottom:6px; margin-top:3px;">Git Add</button>
+                    </form>
+                    {% endif %}
+
+                    {% if dir_i.state in ["modified", "staged"] %}
+                    <form id="git_menu_restore" class="git" action="/git_restore/{{currentDir}}/{{dir_i.f_complete}}/{{dir_i.state}}" method="POST">
+                        <button id="git_restore" class="git" style="margin-bottom:6px;margin-top:3px;">Git Restore</button>
+                    </form>
+                    {% endif %}
+
+                    {% if dir_i.state == "committed" %}
+                    <form id="git_menu_untracking" class="git" action="/git_rm_u/{{currentDir}}/{{dir_i.f_complete}}/{{dir_i.state}}" method="POST">
+                        <button id="git_untracking" class="git" style="margin-bottom:6px;margin-top:3px;">Untracking</button>
+                    </form>
+
+                    <form id="git_menu_deleting" class="git" action="/git_rm_d/{{currentDir}}/{{dir_i.f_complete}}/{{dir_i.state}}" method="POST">
+                        <button id="git_deleting" class="git" style="margin-bottom:6px;margin-top:3px;">Deleting</button>
+                    </form>
+
+                    <form id="git_menu_renaming{{dir_i.f_complete}}" class="git" action="/git_mv/{{currentDir}}/{{dir_i.f_complete}}" method="POST" style="display:none;">
+                        <input id="mv_name" class="git" name="mv_name" type="text" placeholder="rename" style="width:150px;">
+                        <button id="git_mv" class="git">Renaming</button>
+                    </form>
+                    <button id="btn_git_renaming{{dir_i.f_complete}}" class="git" style="margin-bottom:6px;margin-top:3px;" onclick="mv_box(this)">Renaming</button>
+                    {% endif %}
+                    <!--
+                        Done
+                        ============================================================
+                    -->
+                    <!--
+                        ============================================================
+                        OSS CODE
+                        - git mv msg box
+                    -->
+                    <script>
                 function mv_box(param){
                     param.style.display = 'none'
                     document.getElementById('git_menu'+(param.id).slice(7)).style.display = 'block';
                 }
-            </script>
-            <!--
-                Done
-                ============================================================
-            -->
+                    </script>
+                    <!--
+                        Done
+                        ============================================================
+                    -->
+                </div>
+            </div>
+            {% endfor %}
         </div>
+    </div>
+
+
+
+
+
+    <div id="view1_container" class="container" {{ default_view_css_2 }}>
+        <div class="row mt-4">
+            <div class="col-3 mb-2" style=" text-align:center;"><b>Name</b><hr></div>
+            <div class="col-3" style=" text-align:center;"><b>Created Time</b><hr></div>
+            <div class="col-3" style=" text-align:center;"><b>Modified Time</b><hr></div>
+            <div class="col-3" style=" text-align:center;"><b>Size</b><hr></div>
         </div>
-    {% endfor %}
+
+        <div class="row">
+
+
+            {% for k,dir_i in dir_dict.items() %}
+
+            <div class="col-3" style="margin-bottom:-10px">
+
+                <a href="/files/{{dir_i.currentDir}}/{{dir_i.f_url}}">
+
+                    <img src='/static/{{dir_i.image}}' style="position:absolute; height:25px; width:25px; border:0px;" />
+
+                    <p style="margin-left:35px; color:black; text-align:left; text-decoration:none;">
+                        {{dir_i.f}}
+                    </p>
+                </a>
+
+            </div>
+            <div class="col-3" style="margin-bottom:-10px"><p style="margin-left:45px;">{{dir_i.dtc}}</p></div>
+            <div class="col-3" style="margin-bottom:-10px"><p style="margin-left:45px;">{{dir_i.dtm}}</p></div>
+            <div class="col-3" style="margin-bottom:-10px; "><p style="margin-left:110px;">{{dir_i.size}}</p></div>
+
+            {% endfor %}
+        </div>
+
+        <div class="row mt-4"><h5></h5></div> <hr><div class="row mt-4"></div>
+
+        <div class="row">
+
+
+            {% for k,dir_i in file_dict.items() %}
+
+            <div class="col-3" style="margin-bottom:-10px">
+
+                <a href="/download/{{dir_i.currentDir}}/{{dir_i.f_url}}">
+
+                    <img src='/static/{{dir_i.image}}' style="position:absolute; height:25px; width:25px; border:0px;" />
+
+                    <p style="margin-left:35px; color:black; text-align:left; text-decoration:none;">
+                        {{dir_i.f}}
+                    </p>
+                </a>
+
+            </div>
+            <div class="col-3" style="margin-bottom:-10px"><p style="margin-left:45px;">{{dir_i.dtc}}</p></div>
+            <div class="col-3" style="margin-bottom:-10px"><p style="margin-left:45px;">{{dir_i.dtm}}</p></div>
+            <div class="col-3" style="margin-bottom:-10px; "><p style="margin-left:110px;">{{dir_i.size}}</p></div>
+
+            {% endfor %}
+        </div>
+
     </div>
-</div>
-
-
-
-
-
-<div id ="view1_container" class = "container" {{ default_view_css_2 }} >
-    <div class = "row mt-4">
-        <div class="col-3 mb-2" style=" text-align:center;" ><b>Name</b><hr></div>
-        <div class="col-3" style=" text-align:center;" ><b>Created Time</b><hr></div>
-        <div class="col-3" style=" text-align:center;"><b>Modified Time</b><hr></div>
-        <div class="col-3" style=" text-align:center;"><b>Size</b><hr></div>
-</div>
-
-<div class = "row">
-
-
-    {% for k,dir_i in dir_dict.items() %}
-
-    <div class="col-3" style="margin-bottom:-10px">
-
-        <a href="/files/{{dir_i.currentDir}}/{{dir_i.f_url}}">
-        
-            <img src = '/static/{{dir_i.image}}'  style="position:absolute; height:25px; width:25px; border:0px;"/>
-
-            <p style="margin-left:35px; color:black; text-align:left; text-decoration:none;">
-                {{dir_i.f}}
-            </p>
-        </a>
-        
-    </div>
-    <div class="col-3" style="margin-bottom:-10px"><p style="margin-left:45px;">{{dir_i.dtc}}</p></div>
-    <div class="col-3" style="margin-bottom:-10px"><p style="margin-left:45px;">{{dir_i.dtm}}</p></div>
-    <div class="col-3" style="margin-bottom:-10px; "><p style="margin-left:110px;">{{dir_i.size}}</p></div>
-
-    {% endfor %}
-</div>
-
-<div class = "row mt-4"><h5></h5></div> <hr><div class = "row mt-4"></div>
-
-<div class = "row">
-
-
-    {% for k,dir_i in file_dict.items() %}
-
-    <div class="col-3" style="margin-bottom:-10px">
-
-        <a href="/download/{{dir_i.currentDir}}/{{dir_i.f_url}}">
-        
-            <img src = '/static/{{dir_i.image}}'  style="position:absolute; height:25px; width:25px; border:0px;"/>
-
-            <p style="margin-left:35px; color:black; text-align:left; text-decoration:none;">
-            {{dir_i.f}}
-            </p>
-        </a>
-        
-    </div>
-    <div class="col-3" style="margin-bottom:-10px"><p style="margin-left:45px;">{{dir_i.dtc}}</p></div>
-    <div class="col-3" style="margin-bottom:-10px"><p style="margin-left:45px;">{{dir_i.dtm}}</p></div>
-    <div class="col-3" style="margin-bottom:-10px; "><p style="margin-left:110px;">{{dir_i.size}}</p></div>
-
-    {% endfor %}
-</div>
-
-</div>
 
 </section>
+
+<!-- create 버튼 클릭 시 나타나는 폼 -->
+<div class="modal fade" id="create_modal" tabindex="-1" aria-disabled="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <label for="create_text" style="display:inline" class="modal-title">
+                    <h3>Create a new branch</h3>
+                </label>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form action="/create_branch/{{currentDir}}" id="create_form" data-id=0 method="POST">
+                <div class="modal-body">
+                    <div style="font-size:0.5rem;font-style:oblique;opacity: 0.7;">All the white spaces would not be allowed.</div>
+                    <input type="text" id="create_text" name="create_text" placeholder="Enter branch name" style="width:100%;font-size:150%;" required>
+                    <div class="error_text"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Confirm</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- checkout 버튼 클릭 시 나타나는 폼 -->
+<div class="modal fade" id="checkout_modal" tabindex="-1" aria-disabled="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <label for="checkout_text" style="display:inline" class="modal-title">
+                    <h3>Select a branch to checkout</h3>
+                </label>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form action="/checkout_branch/{{currentDir}}" method="POST">
+                <div class="modal-body">
+                    <select class="form-select form-select-lg mb-1" id="checkout_text" name="checkout_text" style="width:100%;font-size:150%;">
+                        {% for name in branch_list %}
+                        {% if name==currentBranch_name %}
+                        <option style="color:red;font-weight:bold;" disabled> {{name}} </option>
+                        {% else %}
+                        <option> {{name}} </option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                    <div id="tracked_err" class="checkout_err" style="color:red;font-weight:bold"></div>
+                    <div id="untracked_err" class="checkout_err" style="color:red;font-weight:bold"></div>
+                    <div id="notice_msg" class="checkout_err"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger force_btn mr-auto" ; formaction="/checkout_branch/{{currentDir}}/1">CHECKOUT</button>
+                    <button type="submit" id="checkout_btn" class="btn btn-primary">Confirm</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- delete 버튼 클릭 시 나타나는 폼 -->
+<div class="modal fade" id="delete_modal" tabindex="-1" aria-disabled="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <label for="delete_text" style="display:inline" class="modal-title">
+                    <h3>Select a branch to delete</h3>
+                </label>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form action="/delete_branch/{{currentDir}}" method="POST">
+                <div class="modal-body">
+                    <select class="form-select form-select-lg mb-1" id="delete_text" name="delete_text" style="width:100%;font-size:150%;">
+                        {% for name in branch_list %}
+                        {% if name==currentBranch_name %}
+                        <option style="color:red;font-weight:bold;" disabled> {{name}} </option>
+                        {% else %}
+                        <option> {{name}} </option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                    <div id="delete_err" style="color:red;font-weight:bold"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger force_btn mr-auto" formaction="/delete_branch/{{currentDir}}/1">DELETE</button>
+                    <button type="submit" id="delete_btn" class="btn btn-primary">Confirm</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- rename 버튼 클릭 시 나타나는 폼 -->
+<div class="modal fade" id="rename_modal" tabindex="-1" aria-disabled="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <label for="rename_select" style="display:inline" class="modal-title">
+                    <h3>Select a branch to rename</h3>
+                </label>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form action="/rename_branch/{{currentDir}}" id="rename_form" data-id=1 method="POST">
+                <div class="modal-body">
+                    <select class="form-select form-select-lg mb-1" id="rename_select" name="rename_select" style="width:100%;font-size:150%;" onchange="$('#rename_text').focus()">
+                        {% for name in branch_list %}
+                        {% if name==currentBranch_name %}
+                        <option style="font-weight:bold;" selected> {{name}} </option>
+                        {% else %}
+                        <option> {{name}} </option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                    <div style="font-size:0.5rem;font-style:oblique;opacity: 0.7;">All the white spaces would not be allowed.</div>
+                    <input type="text" id="rename_text" name="new_name" placeholder="Enter a new branch name" style="width:100%;font-size:150%;" required>
+                    <div class="error_text"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="checkout_btn" class="btn btn-primary">Confirm</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- merge 버튼 클릭 시 나타나는 폼 -->
+<div class="modal fade" id="merge_modal" tabindex="-1" aria-disabled="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <label for="merge_text" style="display:inline" class="modal-title">
+                    <h3>Select a branch to merge with</h3>
+                </label>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form action="/merge_branch/{{currentDir}}" method="POST">
+                <div class="modal-body">
+                    <select class="form-select form-select-lg mb-1" id="merge_text" name="merge_text" style="width:100%;font-size:150%;">
+                        {% for name in branch_list %}
+                        {% if name==currentBranch_name %}
+                        <option style="color:red;font-weight:bold;" disabled> {{name}} </option>
+                        {% else %}
+                        <option> {{name}} </option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                    <div id="tracked_err" class="merge_err" style="color:red;font-weight:bold"></div>
+                    <div id="untracked_err" class="merge_err" style="color:red;font-weight:bold"></div>
+                    <div id="notice_msg" class="merge_err"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger force_btn mr-auto" ; formaction="/merge_branch/{{currentDir}}/1">MERGE</button>
+                    <button type="submit" id="merge_btn" class="btn btn-primary">Confirm</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+const create_modal = $('#create_modal')
+const create_form = $('#create_form')
+const create_text = $('#create_text')
+
+const checkout_modal = $('#checkout_modal')
+const checkout_text = $('#checkout_text')
+const checkout_btn = $('#checkout_btn')
+const tracked_err = $('#tracked_err')
+const untracked_err = $('#untracked_err')
+const notice_msg = $('#notice_msg')
+const checkout_err = $('.checkout_err')
+
+const delete_modal = $('#delete_modal')
+const delete_btn = $('#delete_btn')
+const delete_text = $('#delete_text')
+const notmerged_text = $('#delete_err')
+
+const rename_modal = $('#rename_modal')
+const rename_form = $('#rename_form')
+const rename_text = $('#rename_text')
+
+const merge_modal = $('#merge_modal')
+const merge_text = $('#merge_text')
+const merge_btn = $('#merge_btn')
+
+const error_text = $('.error_text') // create(0)와 rename(1)에서 사용
+const force_btn = $('.force_btn') // checkout(0)과 delete(1)에서 사용
+
+$(function() {
+create_modal.on('show.bs.modal', function() {
+create_text.val('')
+error_text.html('')
+})
+// show.bs.modal에 넣으면 모달 로딩이 focus보다 느려 실행되지 않음
+create_modal.on('shown.bs.modal', function() {
+  create_text.focus()
+})
+create_form.on('submit', {input : create_text, error : error_text.eq(0)}, is_duplicate)
+
+checkout_modal.on('show.bs.modal', function() {
+checkout_err.html('')
+force_btn.eq(0).attr("style", "visibility:hidden")
+})
+checkout_text.on('change', function() {
+checkout_err.html('')
+force_btn.eq(0).attr("style", "visibility:hidden")
+})
+checkout_btn.on('click', is_overwritten)
+
+delete_modal.on('show.bs.modal', function() {
+  notmerged_text.html('')
+  force_btn.eq(1).attr("style", "visibility:hidden")
+})
+delete_text.on('change', function() {
+  notmerged_text.html('')
+  force_btn.eq(1).attr("style", "visibility:hidden")
+})
+delete_btn.on('click', check_deletion)
+
+rename_modal.on('show.bs.modal', function() {
+  rename_text.val('')
+  error_text.html('')
+})
+rename_form.on('submit', {input : rename_text, error : error_text.eq(1)}, is_duplicate)
+})
+
+merge_modal.on('shown.bs.modal',function(){
+    force_btn.eq(0).attr("style","visibility:hidden")
+})
+merge_text.on('change',function(){
+    force_btn.eq(0).attr("style","visibility:hidden")
+})
+merge_btn.on('click', is_overwritten)
+
+// 커밋 기록이 없는지 확인
+function isNoneCommit() {
+return !Object.keys({{ branch_commit|safe }}).length
+}
+
+function is_duplicate(event){
+const ev_data = event.data
+var cur = "{{ currentBranch_name|safe }}"
+var name = ev_data.input.val().replace(/ /g, '')
+var errorMsg = ev_data.error
+var name_list = {{ branch_list|safe }}
+var form_id = event.target.dataset.id
+
+if (form_id==0 && isNoneCommit()) {
+  errorMsg.html(`<b style='color:red;font-weight:bold;'> Error: Your current branch ${cur} does not have any commits.</b>`)
+  return false;
+}
+
+ev_data.input.val(name)
+if (name_list.includes(name)) {
+  errorMsg.html(`<b style='color:red;font-weight:bold;'> Error: a branch named ${name} already exists.</b>`)
+  return false
+}
+
+return true
+}
+
+// 현재 브랜치에서 커밋되지 않은 modified or staged 파일 중
+// checkout 대상 브랜치의 tracked 파일에 해당하지 않는 것은
+// 모두 checkout 시 삭제 대상이 됨.
+// 확인 메시지를 띄워 동의하면 checkout -f 수행.
+// untracked 파일은 해당 브랜치에서 삭제된 상태일 수 있으므로
+// 현재 브랜치의 changed 파일이 대상 브랜치의 untracked 파일에 해당하는지를
+// 확인하는 것만으로는 불충분함.
+// 동위 브랜치는 항상 checkout true
+function is_overwritten(event) {
+var branch = checkout_text.val()
+var target = {{ tracked_list|safe }}[branch] // 대상 브랜치의 tracked 파일명 Array
+var src_changed = {{ changed_list|safe }} // 현재 브랜치의 modified, staged 파일명 Array
+var src_untracked = {{ untracked_list|safe }}
+var tracked = []
+var untracked = []
+var flag = false
+
+if (is_same_commit(branch)) {
+  return true
+}
+
+for (const changed_file of src_changed) {
+  tracked.push(changed_file)
+}
+for (const untracked_file of src_untracked) {
+  if (target.includes(untracked_file)) {
+  untracked.push(untracked_file)
+    }
+}
+
+if(tracked.length > 0) {
+  tracked_err.html(`<div style="font-size:75%"> Error: Your local changes to the following files would be overwritten by checkout:<br>` + tracked.join(' ') + `<br>Please commit your changes before you switch branches.</div>`)
+  flag = true
+}
+if(untracked.length > 0) {
+  untracked_err.html(`<div style="font-size:75%"> Error: The following untracked working tree files would be overwritten by checkout:<br>` + untracked.join(' ') + `<br>Please move or remove them before you switch branches.</div>`)
+  flag = true
+}
+
+if (flag) {
+  notice_msg.html(`<div style="color:black;font-weight:bold">* If you want to checkout by force, press <span style="color:red">"CHECKOUT".</span></div>`)
+  force_btn.eq(0).attr("style", "visibility:visble")
+  return false
+}
+return true
+}
+
+// 두 브랜치가 같은 커밋을 가리키는지 확인
+function is_same_commit(branch) {
+var cur = "{{ currentBranch_name|safe }}"
+var commit_list = {{ branch_commit|safe }}
+return commit_list[cur][0] == commit_list[branch][0]
+}
+
+// 사용자가 선택한 브랜치가 자손 혹은 동위 브랜치를 갖는지 확인하여 존재하면 삭제 수행
+// is not fully merged 에러 처리
+// git bash는 현재 브랜치 대상, 본 메서드는 전체 브랜치 대상(내부적으로는 git branch -D 수행)
+function check_deletion(event) {
+var target = delete_text.val()
+var commit_list = {{ branch_commit|safe }} // {브랜치 : [커밋해시값들]}
+var target_value = commit_list[target][0] // 대상 브랜치 커밋값
+
+for (var name in commit_list) {
+  if(name == target) {
+    continue
+  }
+  for (var commit of commit_list[name]) {
+    if(commit == target_value) {
+      delete_btn.attr("formaction", "/delete_branch/{{currentDir}}/1")
+      return true;
+    }
+  }
+}
+// Error : is not fully merged
+notmerged_text.html(`Error : The branch ${target} is not fully merged.<div style="color:black">* If you are sure you want to delete it, press <span style="font-weight:bold;color:red">"DELETE."</span></div>`)
+force_btn.eq(1).attr("style", "visibility:visble")
+
+return false
+
+}
+
+</script>
 
 {% endblock content %}
