@@ -273,20 +273,30 @@ function isNoneCommit() {
 
 function is_duplicate(event){
   const ev_data = event.data
+  const regex = /^[ㄱ-ㅎ|ㅏ-ㅣ|가-힣|\w\,\@\%\_\+\=\{\}\]](\.?[ㄱ-ㅎ|ㅏ-ㅣ|가-힣|\w\,\@\#\%\-\_\+\=\{\}\]]+)*(\.?[\!\$])?$/
   var cur = "{{ currentBranch_name|safe }}"
   var name = ev_data.input.val().replace(/ /g, '')
-  var errorMsg = ev_data.error
   var name_list = {{ branch_list|safe }}
+  var errorMsg = ev_data.error
+  var invalid = !regex.test(name)
   var form_id = event.target.dataset.id
- 
+  
+  error_text.attr("style","color:red;font-weight:bold")
+  
   if (form_id==0 && isNoneCommit()) {
-    errorMsg.html(`<b style='color:red;font-weight:bold;'> Error: Your current branch ${cur} does not have any commits.</b>`)
+    errorMsg.html(`Error: Your current branch ${cur} does not have any commits.</b>`)
     return false;
   }
 
   ev_data.input.val(name)
+
+  if (invalid) {
+    errorMsg.html(`Error : ${name} is not a valid branch name.`)
+    return false
+  }
+
   if (name_list.includes(name)) {
-    errorMsg.html(`<b style='color:red;font-weight:bold;'> Error: a branch named ${name} already exists.</b>`)
+    errorMsg.html(`Error: a branch named ${name} already exists.</b>`)
     return false
   }
 
