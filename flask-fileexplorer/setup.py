@@ -352,6 +352,8 @@ def filePage(var=""):
 
     if isgit:
         parsed_status = gitStatus_parsing()
+
+        # git branch
         branch_list = getBranchNameList()
         repo = git.Repo(var)
         changed_list = getChangedList()
@@ -366,9 +368,17 @@ def filePage(var=""):
                 cur_branch = 'DETACHED_HEAD'
             else:
                 cur_branch = ''
-        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, currentBranch_name = cur_branch, branch_list=branch_list, changed_list=changed_list, tracked_list=tracked_list, untracked_list=untracked_list, branch_commit=branch_commit)
+
+        # git history
+        commit_history, branch_heads, head_branch, branch_rev_list = gitLog_parsing()
+
+        # org
+        # return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, currentBranch_name = cur_branch, branch_list=branch_list, changed_list=changed_list, tracked_list=tracked_list, untracked_list=untracked_list, branch_commit=branch_commit)
+        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, currentBranch_name = cur_branch, branch_list=branch_list, changed_list=changed_list, tracked_list=tracked_list, untracked_list=untracked_list, branch_commit=branch_commit, commit_history=commit_history, branch_heads=branch_heads, head_branch=head_branch, branch_rev_list=branch_rev_list)
     
-    return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=None)
+    # org
+    # return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=None)
+    return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=None, commit_history=None, branch_heads=None, head_branch=None, branch_rev_list=None)
     # ====================================
 
 @app.route('/', methods=['GET'])
@@ -707,6 +717,58 @@ def gitCommit(var=""):
 # gitStatus_parsing:
 #   현재 git status를 parsing
 #   staged / modified / untracked 세 개의 리스트를 하나의 dict로 return
+def gitLog_parsing():
+
+    global repo_str
+    repo = git.Repo(repo_str)
+    commit_history = []
+    branch_heads = {}
+    head_branch = repo.head.reference.name
+
+    # branch = repo.branches["branch1"]
+    # commit = branch.commit
+    # print(commit)
+    for commit_obj in repo.iter_commits(head_branch):
+        commit_info = {
+            "commitHexa": commit_obj.hexsha,
+            "commitInfo": {
+                "message": commit_obj.message.strip(),
+                "author": str(commit_obj.author),
+                "branches": [],
+                "parents": [p.hexsha for p in commit_obj.parents],
+                "time": commit_obj.committed_datetime
+            }
+        }
+
+        commit_history.append(commit_info)
+
+
+        # Traverse the commit history starting from the branch head
+        # for commit_obj in repo.iter_commits(branch_name):
+
+    for ref in repo.refs:
+        branch_name = ref.name
+        if branch_name.startswith('refs/heads/'):
+            branch_name = branch_name[len('refs/heads/'):]  # Remove the 'refs/heads/' prefix for local branches
+        elif branch_name.startswith('refs/remotes/'):
+            branch_name = branch_name[len('refs/remotes/'):]  # Remove the 'refs/remotes/' prefix for remote branches
+        print(branch_name)
+
+    # for branch in reversed(list(repo.branches)):
+        # branch_name = branch.name
+        print(branch_name)
+        branch_rev_list = repo.git.rev_list("--first-parent", branch_name).split('\n')
+
+        for commit_hash in branch_rev_list:
+            for index, commit_data in enumerate(commit_history):
+                if commit_hash == commit_data["commitHexa"]:
+                    commit_history[index]["commitInfo"]["branches"].append(branch_name)
+                    break
+
+    return commit_history, branch_heads, head_branch, branch_rev_list
+
+
+
 def gitStatus_parsing():
     status_l = {}
 
@@ -743,6 +805,7 @@ def gitStatus_parsing():
     status_l['staged'] = staged
     status_l['modified'] = modified
     status_l['untracked'] = untracked
+
 
     return status_l
 

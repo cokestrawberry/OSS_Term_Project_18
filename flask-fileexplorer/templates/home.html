@@ -20,6 +20,13 @@
         document.getElementById('user_token').style.display = 'block';
     }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@gitgraph/js"></script>
+
+
+<aside class="sidebar_git" style="position:fixed;width:20vw;height:50vh;right:0;display: flex;overflow-y:scroll;">
+    <div id="historyWrap" style="width:100%;min-height:10vh; background-color: #ffff99;">
+    </div>
+</aside>
 
 <aside class="sidebar_git" style="position:fixed;width:17%;height:100vh;">
     <nav class="nav">
@@ -657,5 +664,191 @@ return false
 }
 
 </script>
+
+<!-- git history -->
+<script>
+  console.log('where');
+  const commitHistory = {{commit_history|tojson}};
+  const branchHeads = {{branch_heads|tojson}};
+  const branchRevList = {{branch_rev_list|tojson}};
+  const headBranch = "{{head_branch|lower}}";
+  let branchLog = new Map();
+
+  console.log(commitHistory.toReversed());
+  console.log(headBranch);
+
+  // console.log(Object.entries(commitHistory)[0][1]);
+  // console.log(typeof(Object.entries(commitHistory)[0][1].time));
+
+  const options = {
+      template: GitgraphJS.templateExtend("metro", {
+          colors: ["#264653", "#e76f51", "#e9c46a", "#f4a261"],
+          branch: {
+              lineWidth: 4,
+              spacing: 20,
+          },
+          commit: {
+              dot: {
+                  size: 8,
+              },
+              spacing: 40,
+          }
+      })
+  };
+
+  const graphContainer = document.getElementById("historyWrap");
+  const gitGraph = GitgraphJS.createGitgraph(graphContainer, options);
+
+  const branchList = {};
+  branchList[headBranch] = gitGraph.branch(headBranch);
+
+  commitHistory.toReversed().forEach(({commitHexa : hexa, commitInfo : info}) => {
+      // console.log(hexa);
+      if (info.parents.length === 0) {
+          branchList[headBranch].commit({
+              subject: info.message,
+              hash: hexa,
+              author: info.author,
+          })
+      }
+      if (info.parents.length === 2) {
+          let [parent1, parent2] = info.parents;
+          console.log(hexa)
+          console.log(parent1, parent2);
+
+          const parentBranch1 = commitHistory.find(obj => obj.commitHexa === parent1).commitInfo.branches;
+          const parentBranch2 = commitHistory.find(obj => obj.commitHexa === parent2).commitInfo.branches;
+
+          console.log(parentBranch1);
+          console.log(parentBranch2);
+
+          const branchShare1 = parentBranch1.filter(v => info.branches.includes(v) && Object.keys(branchList).includes(v));
+          const branchShare2 = parentBranch2.filter(v => info.branches.includes(v) && Object.keys(branchList).includes(v));
+
+          console.log(branchShare1);
+          console.log(branchShare2);
+          if (branchShare1.length) {
+              try {
+              branchList[branchShare1[0]].merge({
+                  branch: parentBranch2[0], 
+                  commitOptions: {
+                      subject: info.message,
+                      hash: hexa,
+                      author: '',
+                  }
+              })} catch (e) {
+                  console.error(e)
+              }
+          } else {
+              try {
+                  branchList[branchShare2[0]].merge({
+                      branch: parentBranch1[0], 
+                      commitOptions: {
+                          subject: info.message,
+                          hash: hexa,
+                          author: '',
+                      }
+                  })
+              } catch (e) {
+                  console.error(e)
+              }
+
+          }
+          // const branchExist = branchShare.filter(v => Object.keys(branchList).includes(v));
+
+      }
+
+      if (info.parents.length === 1) {
+          let parent = info.parents[0];
+          const parentCommit = commitHistory.find(obj => obj.commitHexa === parent);
+          // console.log(parent);
+          // console.log(parentCommit);
+          const branchShare = parentCommit.commitInfo.branches.filter(v => info.branches.includes(v));
+          const branchExist = branchShare.filter(v => Object.keys(branchList).includes(v));
+          if (branchExist.length) {
+              branchList[branchExist[0]].commit({
+                  subject: info.message,
+                  hash: hexa,
+                  author: info.author,
+              })
+          } else {
+              // console.log(branchShare);
+              // console.log(hexa);
+              branchList[branchShare[0]] = gitGraph.branch({
+                  name: branchShare[0],
+                  from: parent,
+              })
+              branchList[branchShare[0]].commit({
+                  subject: info.message,
+                  hash: hexa,
+                  author: info.author,
+              })
+          }
+          // console.log(branchShare);
+          // console.log(branchExist);
+      }
+
+  })
+
+
+  // Simulate git commands with gitGraph API.
+
+  // for (let branchName of Object.keys(branchHeads)) {
+  //     branchList[branchName] = gitGraph.branch(elementId = branchName);
+  // }
+
+  // console.log(branchList);
+
+
+  // console.log(branchLog);
+
+
+
+  // for ( let [branchName, branchInfo] of branchLog) {
+  //     console.log(branchName);
+
+  //     branchList[branchInfo.branches[0]].commit({
+  //         subject: branchInfo.message,
+  //         hash: branchName,
+  //         author: branchInfo.author,
+  //         parents: branchInfo.parents,
+  //     })
+  // }
+
+
+
+
+
+  // master.commit({
+      // subject: "Initial commit",
+      // hash: "17fb5029ebbc01cc75ad3b6ef777d2d5db84226a",
+      // author: "hello"
+  // });
+
+  // console.log(master.commit);
+
+  // const develop = master.branch("develop");
+  // develop.commit("Add TypeScript");
+
+  // const aFeature = develop.branch("a-feature");
+  // aFeature
+  //   .commit("Make it work")
+  //   .commit("Make it right")
+  //   .commit("Make it fast");
+
+  // develop.merge(aFeature);
+  // develop.commit("Prepare v1");
+
+  // master.merge(develop).tag("v1.0.0");
+
+</script>
+
+<style>
+  #historyWrap svg text{
+      font: normal 7pt Arial !important;
+      /* transform: translateX(30px); */
+  }
+</style>
+<!-- git history done -->
 
 {% endblock content %}
