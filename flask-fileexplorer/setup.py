@@ -603,8 +603,9 @@ def gitAdd(var=""):
     f = var.split('/')[-1]
     var = '/'.join(var.split('/')[:-1])
     
-    cmd = 'git add ' + f
+    cmd = 'git add ' + "\"" + f + "\""
     print(cmd)
+    os.system("cd " + var)
     os.system(cmd)
 
     # print("git add " + f + " done")
