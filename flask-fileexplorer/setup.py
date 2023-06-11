@@ -352,7 +352,21 @@ def filePage(var=""):
 
     if isgit:
         parsed_status = gitStatus_parsing()
-        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status)
+        branch_list = getBranchNameList()
+        repo = git.Repo(var)
+        changed_list = getChangedList()
+        tracked_list = getTrackedList()
+        untracked_list = getUntrackedList()
+        branch_commit = getBranchCommits()
+
+        try:
+            cur_branch = repo.active_branch.name
+        except:
+            if(repo.head.is_detached):
+                cur_branch = 'DETACHED_HEAD'
+            else:
+                cur_branch = ''
+        return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=parsed_status, currentBranch_name = cur_branch, branch_list=branch_list, changed_list=changed_list, tracked_list=tracked_list, untracked_list=untracked_list, branch_commit=branch_commit)
     
     return render_template('home.html', currentDir=var, favList=favList, default_view_css_1=default_view_css_1, default_view_css_2=default_view_css_2, view0_button=var1, view1_button=var2, currentDir_path=var_path, dir_dict=dir_dict, file_dict=file_dict, isgit=isgit, parsed_status=None)
     # ====================================
@@ -820,7 +834,135 @@ def edit_config_json(hidden=hiddenList, favL=favList, pw=password, uid=user_id, 
     f.write(str_json)
     f.close()
 # ====================================
+# Feature 1 : Branch Management
 
+# 커밋 히스토리 유무를 판단
+def isNoneCommit():
+    global repo_str
+    repo = git.Repo(repo_str)
+    return repo.heads==[]
+
+# GET_BRANCH_LIST
+# 현재 디렉토리에 저장된 브랜치명을 리스트로 반환
+def getBranchNameList():
+    global repo_str
+    repo = git.Repo(repo_str)
+    branch_name = []
+    for branch in repo.heads:
+        branch_name.append(branch.name)
+    if isNoneCommit():
+        branch_name.append(repo.active_branch.name)
+    return branch_name
+
+# Get UntrackedList
+# 현재 저장소의 untracked 파일명을 리스트로 반환
+def getUntrackedList():
+    global repo_str
+    status = gitStatus_parsing()
+    return status['untracked']
+
+# Get ChangedList
+# 현재 브랜치의 modified와 staged 파일명을 합쳐 하나의 리스트로 반환
+def getChangedList():
+    global repo_str
+    status = gitStatus_parsing()
+    str_list = status['modified'] + status['staged']
+    changed_list = []
+    for str in str_list:
+        changed_element = str.split(':')[1].strip()
+        changed_list.append(changed_element)
+    return changed_list
+
+# Get TrackedList
+# 해당 저장소 내 모든 브랜치에 대한 tracked 파일명을
+# {브랜치1,2, .. : 파일1,2, ..}의 dict로 반환
+def getTrackedList():
+    global repo_str 
+    repo = git.Repo(repo_str)
+    trackedDict = {}
+    heads = repo.heads
+    for branch in heads:
+        name = branch.name
+        trackedDict.setdefault(name, [])
+        tree = branch.commit.tree.traverse()
+        trackedDict[name] = list([blob.name for blob in tree])
+    return trackedDict
+
+# 브랜치 삭제 가능 여부를 판단하기 위해
+# 현재 디렉토리 전체 브랜치의 커밋 로그를 dict로 반환
+# home에서 사용자 입력에 대하여 삭제 여부 확인
+def getBranchCommits():
+    global repo_str 
+    repo = git.Repo(repo_str)
+    commitDict = {}
+    heads = repo.heads
+    for branch in heads:
+        name = branch.name
+        commitDict.setdefault(name, [])
+        commits = repo.iter_commits(branch)
+        commitDict[name] = list([commit.hexsha for commit in commits])
+                
+    return commitDict
+
+# Create Branch
+# 사용자가 submit한 branch_name의 값을 branch_list에 저장
+# repo.heads==[]이면 원칙적으로 다른 branch 생성 불가.
+# git checkout -b 옵션 추가 시 .git/HEAD의 값 변경.
+# 이후 add-commit 하면 master의 이름이 변경되는 효과를 가짐.
+# 이후 git branch master로 다시 master 생성하면 동일 커밋을 가리킴.
+@app.route('/create_branch/<path:var>', methods=['POST'])
+def createBranch(var=""):
+    repo = git.Repo(var)
+    branch_name_list = getBranchNameList()
+    new_branch = request.form['create_text']
+    repo.create_head(new_branch)
+
+    return redirect('/files/' + var)
+
+# Checkout Branch
+# 커밋되지 않은 변경사항이 있으면 error 발생
+# git checkout -f 옵션 붙이면 변경사항 삭제하고 강제로 이동함.
+@app.route('/checkout_branch/<path:var>', methods=['POST'])
+@app.route('/checkout_branch/<path:var>/<int:force>', methods=['POST'])
+def checkoutBranch(var="", force=0):
+    repo = git.Repo(var)
+    branch = request.form['checkout_text']
+
+    if force:
+        repo.git.checkout(branch, force=True)
+    else:
+        repo.git.checkout(branch)
+
+    return redirect('/files/' + var)
+
+# Delete Branch
+@app.route('/delete_branch/<path:var>', methods=['POST'])
+@app.route('/delete_branch/<path:var>/<int:force>', methods=['POST'])
+def deleteBranch(var="", force=0):
+    repo = git.Repo(var)
+    branch = request.form['delete_text']
+
+    if force:
+        repo.delete_head(branch, force=True)
+    else:
+        repo.delete_head(branch)
+
+    return redirect('/files/' + var)
+
+# 이름 중복 - front 에서 처리
+@app.route('/rename_branch/<path:var>', methods=['POST'])
+def renameBranch(var=""):
+    repo = git.Repo(var)
+    branch = request.form['rename_select']
+    name = re.sub('\s', '', request.form['new_name'])
+    if isNoneCommit():
+        repo.git.checkout(b=name)
+    else:
+        repo.heads[branch].rename(name)
+
+    return redirect('/files/' + var)
+
+# ====================================
 if __name__ == '__main__':
     local = "127.0.0.1"
     public = '0.0.0.0'
