@@ -96,16 +96,16 @@ With name of command on buttons, you can intuitively know how to use.
   - 'git rm': It works by pressing the Delete button.
 
 * git branch
-  - Create / Delete / Rename / Checkout / Merge are provided as Branch Menu under Git Menu.
-  - The above menus provide a text box to enter a new branch name or a list modal to select an existing branch.
+  - Create
+  - Delete
+  - Rename
+  - Checkout
+  - Merge
   - Error Message
-    - For Create / Delete / Rename / Checkout, the error messages are provided by the modal window itself.
-    - In the case of Merge, the conflict error message informs you of the conflict file as an alert.
 
 * git clone
-  - public/private repository clone
-  - You can designate public or private with the radio button.
-  - In the case of private, the user's id and token are stored and used in the ./flask-fileexplorer/config.json file.
+  - public repository clone
+  - private repository clone
 
 * git history( git log )
   - print out the git commit's log
@@ -164,13 +164,8 @@ If you want to contribute to FMOS, be sure to review the [Google Python Style Gu
 
 * UI
   
-  - first term.
-  ![UI1](UI.png)
+  ![UI](UI.png)
   ![UI_icons](UI_icons.png)
-
-  - second term.
-  ![UI2_1](UI_2_1.png)
-  ![UI2_2](UI_2_2.png)
 
 * Discussion
   - License
@@ -221,9 +216,3 @@ If you want to contribute to FMOS, be sure to review the [Google Python Style Gu
 
       Therefore, after everyone has completed development, proceed with the merge
       Create a "maintenance" branch to hotfix errors on the UI.
-
-* Simple Commit History
-   - first term.
-    ![first_commit_history](simple_commit_history.png)
-  - second term.
-    ![second_commit_history](simple_commit_history_2.png)
