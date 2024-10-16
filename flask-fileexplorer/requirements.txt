@@ -10,5 +10,5 @@ Jinja2==3.0.1
 MarkupSafe==2.0.1
 Pillow
 qrcode==7.1
-Werkzeug==2.0.1
+Werkzeug==3.0.3
 GitPython
